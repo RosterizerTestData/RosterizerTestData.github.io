@@ -11,7 +11,7 @@ import * as xml2js from 'xml2js';
 })
 export class AppComponent implements OnInit {
   title = 'battlescribe-to-rosterizer';
-  urlField: FormControl = new FormControl('https://raw.githubusercontent.com/BSData/wh40k/master/Warhammer%2040%2C000.gst');
+  urlField: FormControl = new FormControl();
   parser;
   manifest: Manifest;
   mhp: ManifestHistoryItem;
@@ -22,7 +22,6 @@ export class AppComponent implements OnInit {
     this.onTranslate = this.onTranslate.bind(this)
   }
   ngOnInit(){
-    this.onTranslate();
   }
 
   onTranslate(){
@@ -239,7 +238,8 @@ export class AppComponent implements OnInit {
     return res
   }
   ucFirst(str:string){
-    return (str || 'unclassified')?.charAt(0).toUpperCase() + (str || 'unclassified')?.slice(1);
+    let compStr = (str || 'unclassified').replace(/\s+/g, ' ');
+    return compStr.charAt(0).toUpperCase() + compStr.slice(1);
   }
 
   orderManifest(manifest: Manifest) {
