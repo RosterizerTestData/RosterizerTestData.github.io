@@ -11,7 +11,7 @@ import * as xml2js from 'xml2js';
 })
 export class AppComponent implements OnInit {
   title = 'battlescribe-to-rosterizer';
-  urlField: FormControl = new FormControl();
+  urlField: FormControl = new FormControl('https://raw.githubusercontent.com/BSData/wh40k/master/Tyranids.cat');
   parser;
   manifest: Manifest;
   mhp: ManifestHistoryItem;
@@ -22,6 +22,7 @@ export class AppComponent implements OnInit {
     this.onTranslate = this.onTranslate.bind(this)
   }
   ngOnInit(){
+    this.onTranslate()
   }
 
   onTranslate(){
@@ -36,8 +37,8 @@ export class AppComponent implements OnInit {
         delete this.mhp.updatedObject;
         delete this.mhp.updated_at;
         delete this.mhp.source;
-        this.mhp.notes = 'This data was translated automatically from a battlescribe catalog. Considerable editing is **HIGHLY** recommended in order for it to become useful in Rosterizer.'
-        console.log(result)
+        this.mhp.notes = 'This data was translated automatically from a battlescribe catalog. Only asset names and bare stats have been translated and considerable editing is required in order for it to become useful in Rosterizer.'
+        console.log(result);
         console.log(IDResult);
         ['CATALOGUE','GAMESYSTEM'].forEach(topLevel => {
           Object.keys(result[topLevel] || {})?.forEach(subCat => {
@@ -52,9 +53,11 @@ export class AppComponent implements OnInit {
                   });
                   break;
                 case 'ENTRYLINKS':
-                  subCats[0].ENTRYLINK?.forEach(entryLink => {
-                    this.mapMasterEntryLink('Roster§Roster',entryLink,IDResult);
-                  });
+                  if(topLevel === 'GAMESYSTEM'){
+                    subCats[0].ENTRYLINK?.forEach(entryLink => {
+                      this.mapMasterEntryLink('Roster§Roster',entryLink,IDResult);
+                    });
+                  }
                   break;
                 case 'SHAREDPROFILES':
                   subCats[0].PROFILE?.forEach(profile => {
@@ -68,7 +71,7 @@ export class AppComponent implements OnInit {
                   break;
                 case 'SHAREDSELECTIONENTRIES':
                   subCats[0].SELECTIONENTRY?.forEach(selection => {
-                    this.mapSelection(selection,result,IDResult);
+                    this.mapSelection(selection,result,IDResult,1);
                   });
                   break;
                 default:
@@ -111,9 +114,6 @@ export class AppComponent implements OnInit {
     let traitKey = traitClass + '§' + traitDesignation;
     this.mhp.manifest.assetTaxonomy[traitClass] = this.mhp.manifest.assetTaxonomy[traitClass] || {};
     this.mhp.manifest.assetCatalog[traitKey] = this.mhp.manifest.assetCatalog[traitKey] || {};
-    this.mhp.manifest.assetCatalog[itemKey].assets = this.mhp.manifest.assetCatalog[itemKey].assets || {};
-    this.mhp.manifest.assetCatalog[itemKey].assets.traits = this.mhp.manifest.assetCatalog[itemKey].assets.traits || [];
-    this.mhp.manifest.assetCatalog[itemKey].assets.traits.push(traitKey);
   }
   mapMasterEntryLink(itemKey,entryLink,IDResult){
     if(!entryLink.hasOwnProperty('MODIFIERS')) this.mapStats(entryLink,itemKey)
@@ -121,20 +121,14 @@ export class AppComponent implements OnInit {
       let assetClass = this.ucFirst(IDResult[IDResult[entryLink.$.TARGETID]?.ID]?.TYPE || IDResult[IDResult[entryLink.$.TARGETID]?.ID]?.TYPENAME || IDResult[entryLink.$.TARGETID]?.TYPE || IDResult[entryLink.$.TARGETID]?.TYPENAME || entryLink.$.TYPE || entryLink.$.TYPENAME);
       let assetDesignation = this.ucFirst(entryLink.$.NAME);
       let assetKey = assetClass + '§' + assetDesignation;
-      this.mhp.manifest.assetCatalog[itemKey].allowed = this.mhp.manifest.assetCatalog[itemKey].allowed || {};
-      this.mhp.manifest.assetCatalog[itemKey].allowed.items = this.mhp.manifest.assetCatalog[itemKey].allowed.items || [];
-      this.mhp.manifest.assetCatalog[itemKey].allowed.items.push(assetKey);
     }
   }
-  mapEntryLink(itemKey,entryLink,IDResult){
+  mapEntryLink(itemKey,entryLink,IDResult,depth){
     let traitClass = this.ucFirst(IDResult[IDResult[entryLink.$.TARGETID]?.ID]?.TYPE || IDResult[IDResult[entryLink.$.TARGETID]?.ID]?.TYPENAME || IDResult[entryLink.$.TARGETID]?.TYPE || IDResult[entryLink.$.TARGETID]?.TYPENAME || entryLink.$.TYPE || entryLink.$.TYPENAME);
     let traitDesignation = this.ucFirst(entryLink.$.NAME);
     let traitKey = traitClass + '§' + traitDesignation;
     this.mhp.manifest.assetTaxonomy[traitClass] = this.mhp.manifest.assetTaxonomy[traitClass] || {};
     this.mhp.manifest.assetCatalog[traitKey] = this.mhp.manifest.assetCatalog[traitKey] || {};
-    this.mhp.manifest.assetCatalog[itemKey].assets = this.mhp.manifest.assetCatalog[itemKey].assets || {};
-    this.mhp.manifest.assetCatalog[itemKey].assets.traits = this.mhp.manifest.assetCatalog[itemKey].assets.traits || [];
-    this.mhp.manifest.assetCatalog[itemKey].assets.traits.push(traitKey);
   }
   mapForceEntries(itemKey,forceEntry){
     let forceClass = 'Force';
@@ -142,9 +136,6 @@ export class AppComponent implements OnInit {
     let forceKey = forceClass + '§' + forceDesignation;
     this.mhp.manifest.assetTaxonomy[forceClass] = this.mhp.manifest.assetTaxonomy[forceClass] || {};
     this.mhp.manifest.assetCatalog[forceKey] = this.mhp.manifest.assetCatalog[forceKey] || {};
-    this.mhp.manifest.assetCatalog[itemKey].allowed = this.mhp.manifest.assetCatalog[itemKey].allowed || {};
-    this.mhp.manifest.assetCatalog[itemKey].allowed.classifications = this.mhp.manifest.assetCatalog[itemKey].allowed.classifications || [];
-    if(!this.mhp.manifest.assetCatalog[itemKey].allowed.classifications.includes(forceClass)) this.mhp.manifest.assetCatalog[itemKey].allowed.classifications.push(forceClass);
     forceEntry.FORCEENTRIES?.[0].FORCEENTRY.forEach(subForceEntry => {
       this.mapSubForceEntries(forceKey,subForceEntry);
     });
@@ -155,27 +146,22 @@ export class AppComponent implements OnInit {
     let subForceKey = subForceClass + '§' + subForceDesignation;
     this.mhp.manifest.assetTaxonomy[subForceClass] = this.mhp.manifest.assetTaxonomy[subForceClass] || {};
     this.mhp.manifest.assetCatalog[subForceKey] = this.mhp.manifest.assetCatalog[subForceKey] || {};
-    this.mhp.manifest.assetCatalog[forceKey].allowed = this.mhp.manifest.assetCatalog[forceKey].allowed || {};
-    this.mhp.manifest.assetCatalog[forceKey].allowed.items = this.mhp.manifest.assetCatalog[forceKey].allowed.items || [];
-    this.mhp.manifest.assetCatalog[forceKey].allowed.items.push(subForceKey);
   }
   mapSubProfile(itemKey,profile){
     let profileKey = 'Profile§' + this.ucFirst(profile.PROFILE[0].$.NAME);
     this.mhp.manifest.assetTaxonomy.Profile = this.mhp.manifest.assetTaxonomy.Profile || {};
     this.mhp.manifest.assetCatalog[profileKey] = this.mhp.manifest.assetCatalog[profileKey] || {};
-    profile.CHARACTERISTICS?.[0]?.CHARACTERISTIC?.forEach(stat => {
+    profile.PROFILE[0].CHARACTERISTICS?.[0]?.CHARACTERISTIC?.forEach(stat => {
       this.mapStats(stat, profileKey);
     });
-    this.mhp.manifest.assetCatalog[itemKey].assets = this.mhp.manifest.assetCatalog[itemKey].assets || {};
-    this.mhp.manifest.assetCatalog[itemKey].assets.traits = this.mhp.manifest.assetCatalog[itemKey].assets.traits || [];
-    this.mhp.manifest.assetCatalog[itemKey].assets.traits.push(profileKey);
   }
-  mapSelection(selection,result,IDResult){
+  mapSelection(selection,result,IDResult,depth){
     let itemClass = this.ucFirst(selection.$.TYPE);
     let itemDesignation = this.ucFirst(selection.$.NAME);
     let itemKey = itemClass + '§' + itemDesignation;
     this.mhp.manifest.assetTaxonomy[itemClass] = this.mhp.manifest.assetTaxonomy[itemClass] || {};
     this.mhp.manifest.assetCatalog[itemKey] = this.mhp.manifest.assetCatalog[itemKey] || {};
+
     selection.CHARACTERISTICS?.[0]?.CHARACTERISTIC?.forEach(stat => {
       this.mapStats(stat, itemKey);
     });
@@ -189,14 +175,14 @@ export class AppComponent implements OnInit {
     });
     selection.ENTRYLINKS?.forEach(link => {
       link.ENTRYLINK.forEach(entryLink => {
-        this.mapEntryLink(itemKey,entryLink,IDResult);
+        this.mapEntryLink(itemKey,entryLink,IDResult,depth);
       });
     });
     selection.PROFILES?.forEach(profile => {
       this.mapSubProfile(itemKey,profile);
     });
     selection.SELECTIONENTRIES?.[0]?.SELECTIONENTRY?.forEach(selection => {
-      this.mapSelection(selection,result,IDResult);
+      this.mapSelection(selection,result,IDResult,depth ++);
     });
   }
   mapStats(stat: any, itemKey: string, cost: boolean = false){
@@ -210,7 +196,7 @@ export class AppComponent implements OnInit {
       classification.stats = classification.stats || {};
       classification.stats[stat.$.NAME] = classification.stats[stat.$.NAME] || {};
       classification.stats[stat.$.NAME].statType = [typeof classification.stats[stat.$.NAME].value, typeof value].every(thing => ['number','undefined'].includes(thing)) ? 'numeric' : 'term';
-      classification.stats[stat.$.NAME].value = classification.stats[stat.$.NAME].statType === 'numeric' ? 0 : '';
+      classification.stats[stat.$.NAME].value = null;
       if(value !== null && classification.stats[stat.$.NAME].value != value){
         item.stats = item.stats || {};
         item.stats[stat.$.NAME] = item.stats[stat.$.NAME] || {};
