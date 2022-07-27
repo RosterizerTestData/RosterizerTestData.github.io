@@ -11,7 +11,7 @@ import * as xml2js from 'xml2js';
 })
 export class AppComponent implements OnInit {
   title = 'battlescribe-to-rosterizer';
-  urlField: FormControl = new FormControl('https://raw.githubusercontent.com/BSData/wh40k/master/Tyranids.cat');
+  urlField: FormControl = new FormControl();
   parser;
   manifest: Manifest;
   mhp: ManifestHistoryItem;
@@ -22,7 +22,6 @@ export class AppComponent implements OnInit {
     this.onTranslate = this.onTranslate.bind(this)
   }
   ngOnInit(){
-    this.onTranslate()
   }
 
   onTranslate(){
