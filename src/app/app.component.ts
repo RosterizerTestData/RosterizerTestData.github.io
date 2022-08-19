@@ -29,10 +29,9 @@ export class AppComponent implements OnInit {
   }
   ngOnInit(){
   }
-
+  
   onTranslate(){
     fetch(this.urlField.value).then((res) => res.text()).then((body) => {
-      this.manifest
       this.parser.parseString(body, (err, result) => {
         let IDResult = this.findIDs(result)
         this.manifest = new Manifest;
@@ -56,6 +55,13 @@ export class AppComponent implements OnInit {
                   subCats[0].FORCEENTRY?.forEach(forceEntry => {
                     this.mapForceEntries('Roster§Roster',forceEntry);
                   });
+                  break;
+                case 'CATEGORYLINKS':
+                  if(topLevel === 'GAMESYSTEM'){
+                    subCats[0].ENTRYLINK?.forEach(entryLink => {
+                      this.mapMasterEntryLink('Roster§Roster',entryLink,IDResult);
+                    });
+                  }
                   break;
                 case 'ENTRYLINKS':
                   if(topLevel === 'GAMESYSTEM'){
@@ -183,6 +189,9 @@ export class AppComponent implements OnInit {
         this.mapEntryLink(itemKey,entryLink,IDResult,depth);
       });
     });
+    selection.CATEGORYLINKS?.forEach(category => {
+      this.mapKeywords(itemKey,category.CATEGORYLINK,IDResult);
+    });
     selection.PROFILES?.forEach(profile => {
       this.mapSubProfile(itemKey,profile);
     });
@@ -213,6 +222,13 @@ export class AppComponent implements OnInit {
         classification.stats[stat.$.NAME].value = null;
       }
     }
+  }
+  mapKeywords(itemKey: string, categories, IDResult){
+    let item = this.mhp.manifest.assetCatalog[itemKey];
+    item.keywords = item.keywords || {Keywords:[]};
+    categories.forEach(category => {
+      item.keywords.Keywords.push(IDResult[category.$.TARGETID]?.NAME || category.$.NAME);
+    });
   }
   findIDs(obj){
     let res = {}
