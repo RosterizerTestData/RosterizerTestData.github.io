@@ -225,9 +225,13 @@ export class AppComponent implements OnInit {
   }
   mapKeywords(itemKey: string, categories, IDResult){
     let item = this.mhp.manifest.assetCatalog[itemKey];
-    item.keywords = item.keywords || {Keywords:[]};
+    item.keywords = item.keywords || {};
     categories.forEach(category => {
-      item.keywords.Keywords.push(IDResult[category.$.TARGETID]?.NAME || category.$.NAME);
+      let keyarray = (IDResult[category.$.TARGETID]?.NAME || category.$.NAME).split(': ');
+      let keyCat = keyarray.length === 1 ? 'Keywords' : keyarray[0];
+      let keyword = keyarray.length === 1 ? keyarray[0] : keyarray[1];
+      item.keywords[keyCat] = item.keywords[keyCat] || [];
+      item.keywords[keyCat].push(keyword);
     });
   }
   findIDs(obj){
