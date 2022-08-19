@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Manifest, ManifestHistoryItem } from 'src/models/manifest.model';
 import { Asset, Item } from 'src/models/object.model';
@@ -10,6 +10,12 @@ import * as xml2js from 'xml2js';
   styleUrls: ['./app.component.sass']
 })
 export class AppComponent implements OnInit {
+  @HostListener('document:keyup', ['$event'])
+  keyEvent(event: KeyboardEvent) {
+    if(event.key === 'Enter'){
+      this.onTranslate();
+    }
+  }
   title = 'battlescribe-to-rosterizer';
   urlField: FormControl = new FormControl();
   parser;

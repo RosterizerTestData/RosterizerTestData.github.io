@@ -3,13 +3,13 @@
 <p>
   This means that the output of this tool may not fit the needs of its game system well, and will most likely need to be adjusted. <em>(but at least all the stats and assets are pre-generated!)</em>
 </p>
-<form>
+<div class="form">
   <input
     placeholder="url to a (raw xml) catalog"
     [formControl]="urlField"
   >
   <button (click)="onTranslate()" type="button">Translate</button>
   <button (click)="onClip()" [disabled]="clipped || !mhp" type="button">Clip</button>
-</form>
+</div>
 
 <ngx-json-viewer *ngIf="mhp" [json]="mhp" [depth]="2"></ngx-json-viewer>
