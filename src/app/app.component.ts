@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
   }
   
   onTranslate(){
-    fetch(this.urlField.value).then((res) => res.text()).then((body) => {
+    fetch('https://proxy.cors.sh/' + this.urlField.value).then((res) => res.text()).then((body) => {
       this.parser.parseString(body, (err, result) => {
         let IDResult = this.findIDs(result)
         this.manifest = new Manifest;
