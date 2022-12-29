@@ -91,6 +91,14 @@ export class AppComponent implements OnInit {
                     });
                   });
                   break;
+                case 'SELECTIONENTRIES':
+                  subCats.forEach(element => {
+                    element.SELECTIONENTRY?.forEach(selection => {
+                      console.log(subCat,selection)
+                      this.mapSelection(selection,result,IDResult,1);
+                    });
+                  });
+                  break;
                 case 'SHAREDSELECTIONENTRIES':
                   subCats.forEach(element => {
                     element.SELECTIONENTRY?.forEach(selection => {
@@ -146,7 +154,7 @@ export class AppComponent implements OnInit {
     let itemKey = itemClass + '§' + itemDesignation;
     this.mhp.manifest.assetTaxonomy[itemClass] = this.mhp.manifest.assetTaxonomy[itemClass] || {};
     this.mhp.manifest.assetCatalog[itemKey] = this.mhp.manifest.assetCatalog[itemKey] || {};
-    this.mhp.manifest.assetCatalog[itemKey].text = rule.DESCRIPTION.join('\n\n');
+    this.mhp.manifest.assetCatalog[itemKey].text = rule.DESCRIPTION?.join('\n\n');
   }
   mapInfoLink(itemKey,infoLink,IDResult){
     let traitClass = this.ucFirst(IDResult[IDResult[infoLink.$.TARGETID]?.ID]?.$.TYPE || IDResult[IDResult[infoLink.$.TARGETID]?.ID]?.$.TYPENAME || IDResult[infoLink.$.TARGETID]?.$.TYPE || IDResult[infoLink.$.TARGETID]?.$.TYPENAME || infoLink.$.TYPE || infoLink.$.TYPENAME);
@@ -220,7 +228,7 @@ export class AppComponent implements OnInit {
       profile.CHARACTERISTICS?.forEach(char => {
         char.CHARACTERISTIC?.forEach(characteristic => {
           // console.log(itemKey,targetKey,profile,characteristic)
-          if(characteristic._.length > 15) this.mhp.manifest.assetCatalog[targetKey].text = characteristic._;
+          if(characteristic._?.length > 15) this.mhp.manifest.assetCatalog[targetKey].text = characteristic._;
           else this.mapStats(characteristic, targetKey);
         });
       });
@@ -336,7 +344,7 @@ export class AppComponent implements OnInit {
     let item = this.mhp.manifest.assetCatalog[itemKey];
     item.keywords = item.keywords || {};
     categories.forEach(category => {
-      let keyarray = (IDResult[category.$.TARGETID]?.$.NAME || category.$.NAME).split(': ');
+      let keyarray = (IDResult[category.$.TARGETID]?.$.NAME || category.$.NAME)?.split(': ') || [];
       let keyCat = keyarray.length === 1 ? 'Keywords' : keyarray[0];
       let keyword = keyarray.length === 1 ? keyarray[0] : keyarray[1];
       item.keywords[keyCat] = item.keywords[keyCat] || [];
