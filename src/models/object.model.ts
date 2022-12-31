@@ -9,25 +9,40 @@ export class AssetError {
   name?: string;
   message?: string = '';
 }
+export class AssetKeys {
+  group: {};
+  hidden: string[];
+}
 
-export class Classification {
-  public keywords?: {[name: string]: string[]} = {};
+export class Base {
+  public keywords?: {[keyCat: string]: string[]} = {};
   public stats?: {[name:string]: StatFormat} = {};
   public assets?: {
     included?: any[];
     traits?: any[];
-  } = {}
+  } = {};
   public allowed?: {
     classifications?: string[],
     items?: string[],
-  };
-  public disallowed?: string[];
-  public templateClass?: string;
-  public lineage?: string[];
-  public info?: {[name:string]:any};
+  } = {};
+  public disallowed?: {
+    classifications?: string[],
+    items?: string[],
+  } = {};
+  public meta?: {[name:string]:any} = {};
   public text?: string = '';
   public rules?: {[name: string]: RuleFormat} = {};
-  public aspects?: ItemAspects = new ItemAspects;
+  public aspects?: ItemAspects = {};
+}
+export class Classification extends Base {
+  public templateClass?: string;
+  public lineage?: string[];
+  public legacy?: string[];
+  public inherited?: Base;
+  public removed?: Base;
+  public net?: Base;
+  public current?: Base;
+  public inheritance?: 'removed'|'inherited'|'modified';
 }
 
 export class ItemAspects {
@@ -47,13 +62,13 @@ export class ItemAspects {
 export type ItemType = 'conceptual' | 'game piece' | 'add-on';
 
 export class Item extends Classification {
-  public classification?: string = '';
-  public designation?: string = '';
-  public id?: string = '';
 }
 
 export class Asset extends Item {
   public item: string = '';
+  public classification?: string = '';
+  public designation?: string = '';
+  public id?: string = '';
   public quantity?: number = 1;
   public originalQty?: number;
   public name?: string;
@@ -82,6 +97,6 @@ export class Asset extends Item {
   public stattable?: boolean;
   public container?: boolean;
   public emptyAsset?: boolean;
-  public assetKeys?: {group: {}, name: boolean};
+  public assetKeys?: AssetKeys;
   public assetsDisplay?: {[name:string]: {[name:string]: Asset[]}};
 }

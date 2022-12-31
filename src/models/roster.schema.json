@@ -1,0 +1,1132 @@
+{
+  "$ref": "#/definitions/RosterHistoryItem",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Asset": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed": {
+          "additionalProperties": false,
+          "properties": {
+            "classifications": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "aspects": {
+          "$ref": "#/definitions/ItemAspects"
+        },
+        "assetKeys": {
+          "$ref": "#/definitions/AssetKeys"
+        },
+        "assets": {
+          "additionalProperties": false,
+          "properties": {
+            "included": {
+              "items": {},
+              "type": "array"
+            },
+            "traits": {
+              "items": {},
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "assetsDisplay": {
+          "additionalProperties": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/definitions/Asset"
+              },
+              "type": "array"
+            },
+            "type": "object"
+          },
+          "type": "object"
+        },
+        "bareAsset": {
+          "$ref": "#/definitions/Asset"
+        },
+        "breadcrumbsRegistry": {
+          "$ref": "#/definitions/Breadcrumbs"
+        },
+        "breadcrumbsRoster": {
+          "$ref": "#/definitions/Breadcrumbs"
+        },
+        "claimed": {
+          "$ref": "#/definitions/Breadcrumbs"
+        },
+        "classes": {
+          "type": "string"
+        },
+        "classification": {
+          "type": "string"
+        },
+        "collapsed": {
+          "type": "boolean"
+        },
+        "container": {
+          "type": "boolean"
+        },
+        "current": {
+          "$ref": "#/definitions/Base"
+        },
+        "custom": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string"
+        },
+        "designation": {
+          "type": "string"
+        },
+        "disallowed": {
+          "additionalProperties": false,
+          "properties": {
+            "classifications": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "division": {
+          "enum": [
+            "traits",
+            "included",
+            "roster"
+          ],
+          "type": "string"
+        },
+        "emptyAsset": {
+          "type": "boolean"
+        },
+        "errors": {
+          "items": {
+            "$ref": "#/definitions/AssetError"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "index": {
+          "type": "number"
+        },
+        "inheritance": {
+          "enum": [
+            "removed",
+            "inherited",
+            "modified"
+          ],
+          "type": "string"
+        },
+        "inherited": {
+          "$ref": "#/definitions/Base"
+        },
+        "item": {
+          "type": "string"
+        },
+        "keywords": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": "object"
+        },
+        "legacy": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lineage": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "meta": {
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
+        },
+        "net": {
+          "$ref": "#/definitions/Base"
+        },
+        "originalQty": {
+          "type": "number"
+        },
+        "parent": {
+          "$ref": "#/definitions/Asset"
+        },
+        "quantity": {
+          "type": "number"
+        },
+        "removed": {
+          "$ref": "#/definitions/Base"
+        },
+        "ruled": {
+          "items": {
+            "$ref": "#/definitions/RuleFormat"
+          },
+          "type": "array"
+        },
+        "rules": {
+          "additionalProperties": {
+            "$ref": "#/definitions/RuleFormat"
+          },
+          "type": "object"
+        },
+        "siblings": {
+          "items": {
+            "$ref": "#/definitions/Asset"
+          },
+          "type": "array"
+        },
+        "stats": {
+          "additionalProperties": {
+            "$ref": "#/definitions/StatFormat"
+          },
+          "type": "object"
+        },
+        "stattable": {
+          "type": "boolean"
+        },
+        "tally": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "type": "object"
+        },
+        "templateClass": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "tracked": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "type": "object"
+        },
+        "traitOrder": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "twinsList": {
+          "items": {
+            "$ref": "#/definitions/Asset"
+          },
+          "type": "array"
+        },
+        "visible": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "item"
+      ],
+      "type": "object"
+    },
+    "AssetError": {
+      "additionalProperties": false,
+      "properties": {
+        "breadcrumbs": {
+          "$ref": "#/definitions/Breadcrumbs"
+        },
+        "message": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/ErrorType"
+        }
+      },
+      "required": [
+        "breadcrumbs"
+      ],
+      "type": "object"
+    },
+    "AssetKeys": {
+      "additionalProperties": false,
+      "properties": {
+        "group": {
+          "additionalProperties": false,
+          "type": "object"
+        },
+        "hidden": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "group",
+        "hidden"
+      ],
+      "type": "object"
+    },
+    "AssetVisibility": {
+      "enum": [
+        "always",
+        "edited",
+        "active"
+      ],
+      "type": "string"
+    },
+    "Base": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed": {
+          "additionalProperties": false,
+          "properties": {
+            "classifications": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "aspects": {
+          "$ref": "#/definitions/ItemAspects"
+        },
+        "assets": {
+          "additionalProperties": false,
+          "properties": {
+            "included": {
+              "items": {},
+              "type": "array"
+            },
+            "traits": {
+              "items": {},
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "disallowed": {
+          "additionalProperties": false,
+          "properties": {
+            "classifications": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "keywords": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": "object"
+        },
+        "meta": {
+          "type": "object"
+        },
+        "rules": {
+          "additionalProperties": {
+            "$ref": "#/definitions/RuleFormat"
+          },
+          "type": "object"
+        },
+        "stats": {
+          "additionalProperties": {
+            "$ref": "#/definitions/StatFormat"
+          },
+          "type": "object"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "BranchingPath": {
+      "items": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        ]
+      },
+      "type": "array"
+    },
+    "Breadcrumbs": {
+      "items": {
+        "type": [
+          "string",
+          "number"
+        ]
+      },
+      "type": "array"
+    },
+    "ErrorType": {
+      "enum": [
+        "info",
+        "alert",
+        "warning",
+        "error"
+      ],
+      "type": "string"
+    },
+    "ItemAspects": {
+      "additionalProperties": false,
+      "properties": {
+        "Collapse": {
+          "type": "boolean"
+        },
+        "Describe": {
+          "type": "boolean"
+        },
+        "Group Includes": {
+          "type": "boolean"
+        },
+        "Group Traits": {
+          "type": "boolean"
+        },
+        "Lock Qty": {
+          "type": "boolean"
+        },
+        "Order Includes A–Z": {
+          "type": "boolean"
+        },
+        "Order Traits A–Z": {
+          "type": "boolean"
+        },
+        "Rename": {
+          "type": "boolean"
+        },
+        "Type": {
+          "$ref": "#/definitions/ItemType"
+        },
+        "Unique": {
+          "type": "boolean"
+        },
+        "Visibility": {
+          "$ref": "#/definitions/AssetVisibility"
+        }
+      },
+      "type": "object"
+    },
+    "ItemType": {
+      "enum": [
+        "conceptual",
+        "game piece",
+        "add-on"
+      ],
+      "type": "string"
+    },
+    "PathNodeTypes": {
+      "enum": [
+        "string",
+        "Asset",
+        "text",
+        "number",
+        "boolean",
+        "path",
+        "array",
+        "object",
+        "DivisionType",
+        "AssetVisibility",
+        "ItemType",
+        "StatVis",
+        "RuleResult",
+        "RuleOperator",
+        "RuleEquationOperator"
+      ],
+      "type": "string"
+    },
+    "PathOptionTreeNode": {
+      "additionalProperties": false,
+      "properties": {
+        "descendants": {
+          "items": {
+            "$ref": "#/definitions/PathOptionTreeNode"
+          },
+          "type": "array"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "id": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "identifier": {
+          "type": "boolean"
+        },
+        "tooltip": {
+          "type": "string"
+        },
+        "type": {
+          "items": {
+            "$ref": "#/definitions/PathNodeTypes"
+          },
+          "type": "array"
+        },
+        "writable": {
+          "items": {
+            "$ref": "#/definitions/Writability"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "RankFormat": {
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "type": "string"
+        },
+        "hotkey": {
+          "type": "string"
+        },
+        "icons": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "number": {
+          "type": "number"
+        },
+        "order": {
+          "type": "number"
+        },
+        "term": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "tracking": {
+          "$ref": "#/definitions/RankTracking"
+        },
+        "traits": {
+          "items": {
+            "$ref": "#/definitions/RankTrait"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "order"
+      ],
+      "type": "object"
+    },
+    "RankTracking": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "type": "object"
+    },
+    "RankTrait": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "pathError": {
+          "type": "boolean"
+        },
+        "trait": {}
+      },
+      "required": [
+        "trait"
+      ],
+      "type": "object"
+    },
+    "RosterHistoryItem": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/Breadcrumbs"
+        },
+        "manifestSlug": {
+          "type": "string"
+        },
+        "noErrors": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": "string"
+        },
+        "roster": {
+          "$ref": "#/definitions/Asset"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "note",
+        "id",
+        "updated_at",
+        "roster"
+      ],
+      "type": "object"
+    },
+    "RuleAction": {
+      "additionalProperties": false,
+      "properties": {
+        "actionType": {
+          "$ref": "#/definitions/RuleActionType"
+        },
+        "iterations": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "#/definitions/BranchingPath"
+            }
+          ]
+        },
+        "note": {
+          "type": "string"
+        },
+        "paths": {
+          "items": {
+            "$ref": "#/definitions/BranchingPath"
+          },
+          "type": "array"
+        },
+        "value": {
+          "$ref": "#/definitions/RuleSuccessValue"
+        }
+      },
+      "required": [
+        "actionType",
+        "paths"
+      ],
+      "type": "object"
+    },
+    "RuleActionType": {
+      "enum": [
+        "add",
+        "remove",
+        "set",
+        "modify",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "RuleEquation": {
+      "additionalProperties": false,
+      "properties": {
+        "operator": {
+          "enum": [
+            "T/O",
+            "O/T",
+            "T*O",
+            "T+O",
+            "T-O",
+            "O-T"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "#/definitions/BranchingPath"
+            }
+          ]
+        }
+      },
+      "required": [
+        "operator",
+        "value"
+      ],
+      "type": "object"
+    },
+    "RuleEval": {
+      "additionalProperties": false,
+      "properties": {
+        "actionable": {
+          "type": "boolean"
+        },
+        "contains": {
+          "type": "boolean"
+        },
+        "equation": {
+          "$ref": "#/definitions/RuleEquation"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "#/definitions/BranchingPath"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "min": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "#/definitions/BranchingPath"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "not": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": "string"
+        },
+        "operator": {
+          "$ref": "#/definitions/RuleOperator"
+        },
+        "paths": {
+          "items": {
+            "$ref": "#/definitions/BranchingPath"
+          },
+          "type": "array"
+        },
+        "result": {
+          "additionalProperties": false,
+          "properties": {
+            "float": {
+              "type": "number"
+            },
+            "integer": {
+              "type": "number"
+            },
+            "remainder": {
+              "type": "number"
+            },
+            "string": {
+              "type": "string"
+            },
+            "truthy": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/BranchingPath"
+            }
+          ]
+        }
+      },
+      "required": [
+        "paths"
+      ],
+      "type": "object"
+    },
+    "RuleFormat": {
+      "additionalProperties": false,
+      "properties": {
+        "actionTargets": {
+          "items": {
+            "$ref": "#/definitions/TargetContainer"
+          },
+          "type": "array"
+        },
+        "actions": {
+          "items": {
+            "$ref": "#/definitions/RuleAction"
+          },
+          "type": "array"
+        },
+        "asset": {
+          "$ref": "#/definitions/Asset"
+        },
+        "evalTargets": {
+          "items": {
+            "items": {
+              "$ref": "#/definitions/TargetContainer"
+            },
+            "type": "array"
+          },
+          "type": "array"
+        },
+        "evals": {
+          "items": {
+            "$ref": "#/definitions/RuleEval"
+          },
+          "type": "array"
+        },
+        "evaluate": {
+          "$ref": "#/definitions/RuleOperator"
+        },
+        "failState": {
+          "$ref": "#/definitions/RuleResult"
+        },
+        "flat": {
+          "$ref": "#/definitions/RuleFormat"
+        },
+        "name": {
+          "type": "string"
+        },
+        "order": {
+          "type": "number"
+        },
+        "problem": {
+          "type": "boolean"
+        },
+        "return": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "source": {
+          "$ref": "#/definitions/Breadcrumbs"
+        }
+      },
+      "type": "object"
+    },
+    "RuleOperator": {
+      "enum": [
+        "AND",
+        "OR",
+        "SUM"
+      ],
+      "type": "string"
+    },
+    "RuleResult": {
+      "enum": [
+        "warning",
+        "error",
+        "disable",
+        "hide",
+        "pass",
+        false
+      ],
+      "type": [
+        "string",
+        "boolean"
+      ]
+    },
+    "RuleSuccessValue": {},
+    "StatFormat": {
+      "additionalProperties": false,
+      "properties": {
+        "customValue": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "dynamic": {
+          "type": "boolean"
+        },
+        "format": {
+          "type": "string"
+        },
+        "group": {
+          "type": "string"
+        },
+        "groupOrder": {
+          "type": "number"
+        },
+        "icons": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "increment": {
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "label": {
+          "type": "string"
+        },
+        "max": {
+          "type": "number"
+        },
+        "min": {
+          "type": "number"
+        },
+        "processed": {
+          "$ref": "#/definitions/StatProcessed"
+        },
+        "ranks": {
+          "additionalProperties": {
+            "$ref": "#/definitions/RankFormat"
+          },
+          "type": "object"
+        },
+        "statOrder": {
+          "type": "number"
+        },
+        "statType": {
+          "$ref": "#/definitions/StatType"
+        },
+        "text": {
+          "type": "string"
+        },
+        "tracked": {
+          "type": "boolean"
+        },
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "null"
+          ]
+        },
+        "visibility": {
+          "$ref": "#/definitions/StatVisibility"
+        }
+      },
+      "type": "object"
+    },
+    "StatProcessed": {
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "additionalProperties": false,
+          "properties": {
+            "current": {
+              "type": "string"
+            },
+            "default": {
+              "type": "string"
+            },
+            "original": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "numeric": {
+          "additionalProperties": false,
+          "properties": {
+            "current": {
+              "type": "number"
+            },
+            "default": {
+              "type": "number"
+            },
+            "original": {
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "rank": {
+          "additionalProperties": false,
+          "properties": {
+            "current": {
+              "type": "string"
+            },
+            "default": {
+              "type": "string"
+            },
+            "original": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "term": {
+          "additionalProperties": false,
+          "properties": {
+            "current": {
+              "type": "string"
+            },
+            "default": {
+              "type": "string"
+            },
+            "original": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "numeric",
+        "rank",
+        "term",
+        "format"
+      ],
+      "type": "object"
+    },
+    "StatType": {
+      "enum": [
+        "numeric",
+        "rank",
+        "term"
+      ],
+      "type": "string"
+    },
+    "StatVisibility": {
+      "enum": [
+        "always",
+        "normal",
+        "active",
+        "hidden"
+      ],
+      "type": "string"
+    },
+    "TargetContainer": {
+      "additionalProperties": false,
+      "properties": {
+        "props": {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "$ref": "#/definitions/RuleAction"
+            },
+            "bareAsset": {
+              "$ref": "#/definitions/Asset"
+            },
+            "location": {
+              "additionalProperties": false,
+              "properties": {
+                "division": {
+                  "type": "string"
+                },
+                "index": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "division",
+                "index"
+              ],
+              "type": "object"
+            },
+            "name": {
+              "type": "string"
+            },
+            "options": {
+              "$ref": "#/definitions/PathOptionTreeNode"
+            },
+            "path": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "self": {
+              "$ref": "#/definitions/Asset"
+            },
+            "targetAsset": {
+              "$ref": "#/definitions/Asset"
+            }
+          },
+          "required": [
+            "name",
+            "self",
+            "targetAsset",
+            "location",
+            "path"
+          ],
+          "type": "object"
+        },
+        "target": {}
+      },
+      "required": [
+        "target",
+        "props"
+      ],
+      "type": "object"
+    },
+    "Writability": {
+      "enum": [
+        "add",
+        "remove",
+        "set",
+        "modify"
+      ],
+      "type": "string"
+    }
+  }
+}

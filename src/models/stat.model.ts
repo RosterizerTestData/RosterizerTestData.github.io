@@ -4,7 +4,7 @@ export type StatVisibility = 'always' | 'normal' | 'active' | 'hidden';
 export type StatType = 'numeric' | 'rank' | 'term';
 
 export class StatFormat{
-  value?: string | number; // The string value, or numerical value, or the rank currently selected. This is read only.
+  value?: string | number | null; // The string value, or numerical value, or the rank currently selected. This is read only.
   customValue?: string | number; // Storage for value that is assigned but may not be legal. Only dynamic stats use custom values.
   statType?: StatType; // Denotes whether this stat is a string (term), number (numeric), or rank.
   dynamic?: boolean; // Sets whether the user can edit this stat's value.
@@ -37,7 +37,7 @@ export class RankFormat {
 }
 export interface RankTrait {
   path?: string[], // the asset's path to which the trait should be included
-  trait: string | Asset, // the trait to include
+  trait: any, // string | Asset, // the trait to include // TODO avj validator bails when refs (Asset | BranchingPath) are allowed
   pathError?: boolean, // whether the current path is a problem (not aiming at a potential asset)
 }
 export interface RankTracking {

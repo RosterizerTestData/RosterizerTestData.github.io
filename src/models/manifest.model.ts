@@ -1,5 +1,5 @@
-import { Classification, Item, Asset } from './object.model'
-import { Breadcrumbs } from './app.model';
+import { Classification, Item, Asset, AssetError } from './object.model'
+import { Breadcrumbs, ErrorType } from './app.model';
 
 export class Manifest {
   public slug: string = '';
@@ -9,18 +9,21 @@ export class Manifest {
   
   public hash: string = '';
   public locked: boolean = false;
-  public wip: boolean = true;
 
   public created_at?: string;
   public updated_at?: string;
   public deleted_at?: string;
 
   public processed: {
+    composedDependencies?: ManifestData,
+    dependencies?: ManifestDependency[],
     assetInventory?: { [name: string]: Asset },
     assetMorphology?: {[name: string]: Classification},
     hierarchy?: {[name: string]: Hierarchy},
     unclassified?: string[],
     source?: {url?: string, data?: any},
+    lineage?: ManifestDependency[],
+    errors?: AssetError[],
   } = {};
   public history: ManifestHistory = new ManifestHistory();
 }
@@ -33,12 +36,13 @@ export class ManifestHistory {
 
 export class ManifestHistoryItem {
   public name: string = '';
-  public id: string[] = ['assetCatalog','Roster'];
-  public note: string = 'Manifest Created';
-  public updated_at: string = '';
+  public id?: string[] = ['assetCatalog','Roster'];
+  public note?: string = 'Manifest Created';
+  public updated_at?: string = '';
   public updatedObject?: Breadcrumbs;
-  public revision: number;
-  public dependencies?: string | string[];
+  public revision: string;
+  public wip: boolean = true;
+  public dependencies?: ManifestDependency[];
   public game: string = '';
   public genre: string = 'generic';
   public publisher: string = '';
@@ -47,11 +51,17 @@ export class ManifestHistoryItem {
   public source?: string;
   public manifest: ManifestData = new ManifestData();
 }
-  export class ManifestData {
+
+export class ManifestDependency {
+  public slug: string = '';
+  public name: string = '';
+  public game: string = '';
+}
+export class ManifestData {
   public assetTaxonomy: { [name: string]: Classification } = { };
-  public assetCatalog: { [name: string]: Item } = { 'Roster§Roster': {classification: 'Roster'}};
-  public gameModes: {};
-  public theme: {};
+  public assetCatalog: { [name: string]: Item } = { 'Roster§Roster': {}};
+  public gameModes?: {} = {};
+  public theme?: {} = {};
 }
 
 export class Hierarchy {

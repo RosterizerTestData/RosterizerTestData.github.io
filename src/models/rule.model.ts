@@ -5,7 +5,7 @@ export type BranchingPath = (string | string[])[];
 export type RuleOperator = 'AND' | 'OR' | 'SUM';
 export type RuleResult = 'warning' | 'error' | 'disable' | 'hide' | 'pass' | false;
 export type RuleActionType = 'add' | 'remove' | 'set' | 'modify' | null;
-export type RuleSuccessValue = boolean | number | string | Asset | BranchingPath;
+export type RuleSuccessValue = any; // | boolean | number | string | Asset | BranchingPath; // TODO avj validator bails when refs (Asset | BranchingPath) are allowed
 export type TargetContainer = {
   target: any, 
   props: {
@@ -23,7 +23,7 @@ export type RuleAction = {
   actionType: RuleActionType,
   paths: BranchingPath[],
   value?: RuleSuccessValue,
-  iterations?: number,
+  iterations?: number | BranchingPath,
   note?:string,
 }
 export type RuleEquation = {
@@ -32,8 +32,8 @@ export type RuleEquation = {
 }
 export type RuleEval = {
   paths: BranchingPath[];
-  max?: number | BranchingPath,
-  min?: number | BranchingPath,
+  max?: number | BranchingPath | null,
+  min?: number | BranchingPath | null,
   value?: number | boolean | string | BranchingPath,
   contains?: boolean,
   operator?: RuleOperator,
