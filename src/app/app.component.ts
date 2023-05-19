@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
   }
   
   onTranslate(){
-    fetch('https://proxy.cors.sh/' + this.urlField.value).then((res) => res.text()).then((body) => {
+    fetch('https://api.codetabs.com/v1/proxy?quest=' + this.urlField.value).then((res) => res.text()).then((body) => {
       this.parser.parseString(body, (err, result) => {
         let IDResult = this.findIDs(result)
         this.manifest = new Manifest;
@@ -164,7 +164,7 @@ export class AppComponent implements OnInit {
     if(infoLink.$.TYPE === 'profile'){
       let profile = IDResult[infoLink.$.TARGETID];
       // console.log(profile)
-      profile.CHARACTERISTICS?.forEach(element => {
+      profile?.CHARACTERISTICS?.forEach(element => {
         element.CHARACTERISTIC?.forEach(stat => {
           this.mapStats(stat, itemKey);
         });
