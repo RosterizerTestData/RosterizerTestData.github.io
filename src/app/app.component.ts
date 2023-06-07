@@ -3,6 +3,8 @@ import { FormControl } from '@angular/forms';
 import { Manifest, ManifestHistoryItem } from 'src/models/manifest.model';
 import { Asset, Item } from 'src/models/object.model';
 import * as xml2js from 'xml2js';
+import * as JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-root',
@@ -413,5 +415,124 @@ export class AppComponent implements OnInit {
       if(typeof ordered[k] == "object" && ordered[k] !== null) ordered[k] = this.orderObjectRecurse(ordered[k],log);
     }
     return ordered
+  }
+
+  exportCSVs(event: Event){
+    const classNames = Object.keys(this.manifest.history.present.manifest.assetTaxonomy);
+    let csvStrings:{[className: string]: string} = {};
+    classNames.forEach(className => {
+      let itemList = Object.entries(this.manifest.history.present.manifest.assetCatalog).filter(([itemKey,item]) => itemKey.split('§')[0] === className);
+      const verboten = ['designation','classification','id','templateClass','rules','aspects','tracked','tally'];
+      const kosher = ['stats','keywords','allowed','constraints','disallowed','assets','text','info'];
+      let itemFields = [['designation']];
+      let classCompare = this.manifest.history.present.manifest.assetTaxonomy[className];
+      kosher.forEach((key,i) => {
+        switch (key) {
+          case 'stats':
+            let newStatList = {}
+            while(Object.keys(classCompare.stats || {}).length){
+              let statName = Object.keys(classCompare.stats)[0];
+              let stat = classCompare.stats[statName];
+              let statGroupOrder = stat.groupOrder || 1;
+              let statOrder = stat.statOrder || 1;
+              newStatList[statGroupOrder] = newStatList[statGroupOrder] || {};
+              newStatList[statGroupOrder][statOrder] = newStatList[statGroupOrder][statOrder] || {};
+              newStatList[statGroupOrder][statOrder][statName] = stat;
+              delete classCompare.stats[statName];
+            }
+            let statGroupOrders = Object.keys(newStatList).map(groupOrder => parseInt(groupOrder)).sort((a,b) => a - b);
+            statGroupOrders.forEach(groupOrder => {
+              let statOrders = Object.keys(newStatList[groupOrder]).map(statOrder => parseInt(statOrder)).sort((a,b) => a - b);
+              statOrders.forEach(statOrder => {
+                Object.keys(newStatList[groupOrder][statOrder]).sort((a,b) => a.localeCompare(b)).forEach(statName => {
+                  itemFields.push([key,statName]);
+                })
+              });
+            });
+            break;
+          case 'info':
+            if(Object.keys(classCompare).includes(key)){
+              Object.keys(classCompare[key]).forEach(keyCat => {
+                itemFields.push([key,keyCat]);
+              })
+            }
+            break;
+          case 'keywords':
+            if(Object.keys(classCompare).includes(key)){
+              Object.keys(classCompare[key]).forEach(keyCat => {
+                itemFields.push([key,keyCat]);
+              })
+            }else{
+              itemFields.push([key,'Keywords'],[key,'Tags']);
+            }
+            break;
+          case 'assets':
+            itemFields.push(...[['assets','traits'],['assets','included']]);
+            break;
+          case 'allowed':
+            itemFields.push(...[['allowed','classifications'],['allowed','items']]);
+            break;
+          case 'constraints':
+            itemFields.push(...[['constraints','any'],['constraints','all'],['constraints','none'],['constraints','not']]);
+            break;
+          case 'disallowed':
+            itemFields.push(...[['disallowed','classifications'],['disallowed','items']]);
+            break;
+          case 'text':
+            itemFields.push(['text']);
+            break;
+          default:
+            break;
+        }
+      });
+      let csvString = itemFields.map(item => item.join('§')).join(',') + '\r\n';
+      itemList.forEach(([itemKey,item],i) => {
+        item['designation'] = itemKey.split('§')[1];
+        let itemLine: string[] = [];
+        itemFields.forEach(itemField => {
+          let obj: any = item;
+          itemField.forEach(fieldNode => {
+            obj = obj?.[fieldNode] || null;
+          });
+          if(typeof obj === 'string'){
+            itemLine.push(this.formatCSVEntry(obj));
+          }else if(Array.isArray(obj)){
+            if(['assets','allowed','constraints','disallowed'].includes(itemField[0])){
+              let toFormat = obj.map(objEl => {
+                if(typeof objEl === 'object') return JSON.stringify(objEl)
+                else return objEl
+              })
+              itemLine.push(this.formatCSVEntry(toFormat.join('§§')));
+            }
+            else itemLine.push(this.formatCSVEntry(obj.join('§')));
+          }else if(itemField[0] === 'stats'){
+            let statName = itemField[1];
+            let statToPush = (obj?.value || obj?.value === 0) ? obj?.value : null;
+            if(statToPush === null) itemLine.push('§');
+            else if(typeof statToPush === 'undefined') itemLine.push('');
+            else itemLine.push(this.formatCSVEntry(statToPush));
+          }else itemLine.push('');
+        });
+        csvString += itemLine.join(',');
+        csvString += (i + 1) < Object.keys(itemList).length ? '\r\n' : '';
+      });
+      csvStrings[className] = csvString;
+    });
+    let filename = '';
+    filename += (this.manifest.history.present.game + '_') || '';
+    filename += (this.manifest.history.present.name) || '';
+    var zip = new JSZip();
+    Object.entries(csvStrings).forEach(([className,csvString]) => {
+      zip.file(filename + '_' + className + '_assets.csv', csvString);
+    });
+    zip.generateAsync({type:'blob'}).then(function(content) {
+      saveAs(content, filename + '.zip');
+    });
+  }
+  formatCSVEntry(value){
+    let formattedValue = value;
+    if(typeof formattedValue === 'number') formattedValue = formattedValue.toString();
+    if(formattedValue?.includes(',') || formattedValue?.includes('"')) formattedValue = `"${formattedValue.replace(/"/g,'""')}"`;
+    return formattedValue.replace(/(\r\n|\r|\n)/g,'\\n')
   }
 }
