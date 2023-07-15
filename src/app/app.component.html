@@ -10,7 +10,7 @@
   >
   <button (click)="onTranslate()" type="button">Translate</button>
   <button (click)="onClip()" [disabled]="clipped || !mhp" type="button">Clip</button>
-  <button (click)="exportCSVs($event)" [disabled]="clipped || !mhp" type="button">CSVs</button>
+  <button (click)="exportCSVs($event)" [disabled]="!mhp" type="button">CSVs</button>
 </div>
 
 <ngx-json-viewer *ngIf="mhp" [json]="mhp" [depth]="2"></ngx-json-viewer>

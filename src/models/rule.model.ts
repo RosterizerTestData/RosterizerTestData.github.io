@@ -46,6 +46,7 @@ export type RuleEval = {
     float?: number,
     remainder?: number,
     string?: string,
+    array?: string[],
     truthy?: boolean
   }
 }

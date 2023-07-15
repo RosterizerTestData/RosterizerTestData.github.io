@@ -25,7 +25,7 @@ export class StatFormat{
 }
 
 export class RankFormat {
-  order: number; // The array index of this rank.
+  order?: number; // The array index of this rank.
   number?: number; // The numerical value this rank holds.
   term?: string; // The string value this rank holds.
   icons?: string[]; // The icons (that can be) used by this rank.
@@ -34,6 +34,7 @@ export class RankFormat {
   format?: string; // The text that this rank displays, has the ability to represent values and icons assosiated with this rank.
   hotkey?: string; // A hotkey that when this rank picker is active and is pressed activates this rank.
   text?: string; // Text that is added to the parent asset when this rank is selected.
+  prepend?: boolean; // Whether to prepend the previous-ordered rank's text to this rank.
 }
 export interface RankTrait {
   path?: string[], // the asset's path to which the trait should be included

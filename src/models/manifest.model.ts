@@ -9,6 +9,7 @@ export class Manifest {
   
   public hash: string = '';
   public locked: boolean = false;
+  public source?: string = '';
 
   public created_at?: string;
   public updated_at?: string;
@@ -40,8 +41,9 @@ export class ManifestHistoryItem {
   public note?: string = 'Manifest Created';
   public updated_at?: string = '';
   public updatedObject?: Breadcrumbs;
-  public revision: string;
+  public revision: string = '0.0.1';
   public wip: boolean = true;
+  public isModule?: boolean;
   public dependencies?: ManifestDependency[];
   public game: string = '';
   public genre: string = 'generic';
@@ -56,6 +58,7 @@ export class ManifestDependency {
   public slug: string = '';
   public name: string = '';
   public game: string = '';
+  public source: string = '';
 }
 export class ManifestData {
   public assetTaxonomy: { [name: string]: Classification } = { };

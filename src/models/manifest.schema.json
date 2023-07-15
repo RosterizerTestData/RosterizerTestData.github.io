@@ -19,6 +19,18 @@
                 "type": "string"
               },
               "type": "array"
+            },
+            "keywordsAll": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "keywordsAny": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
             }
           },
           "type": "object"
@@ -58,6 +70,9 @@
         "bareAsset": {
           "$ref": "#/definitions/Asset"
         },
+        "bareResource": {
+          "$ref": "#/definitions/Asset"
+        },
         "breadcrumbsRegistry": {
           "$ref": "#/definitions/Breadcrumbs"
         },
@@ -67,6 +82,9 @@
         "claimed": {
           "$ref": "#/definitions/Breadcrumbs"
         },
+        "classIdentity": {
+          "type": "string"
+        },
         "classes": {
           "type": "string"
         },
@@ -75,6 +93,36 @@
         },
         "collapsed": {
           "type": "boolean"
+        },
+        "constraints": {
+          "additionalProperties": false,
+          "properties": {
+            "all": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "any": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "none": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "not": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
         },
         "container": {
           "type": "boolean"
@@ -101,6 +149,18 @@
               "type": "array"
             },
             "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "keywordsAll": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "keywordsAny": {
               "items": {
                 "type": "string"
               },
@@ -320,6 +380,18 @@
                 "type": "string"
               },
               "type": "array"
+            },
+            "keywordsAll": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "keywordsAny": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
             }
           },
           "type": "object"
@@ -341,6 +413,36 @@
           },
           "type": "object"
         },
+        "constraints": {
+          "additionalProperties": false,
+          "properties": {
+            "all": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "any": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "none": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "not": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
         "disallowed": {
           "additionalProperties": false,
           "properties": {
@@ -351,6 +453,18 @@
               "type": "array"
             },
             "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "keywordsAll": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "keywordsAny": {
               "items": {
                 "type": "string"
               },
@@ -431,6 +545,18 @@
                 "type": "string"
               },
               "type": "array"
+            },
+            "keywordsAll": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "keywordsAny": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
             }
           },
           "type": "object"
@@ -452,6 +578,36 @@
           },
           "type": "object"
         },
+        "constraints": {
+          "additionalProperties": false,
+          "properties": {
+            "all": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "any": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "none": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "not": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
         "current": {
           "$ref": "#/definitions/Base"
         },
@@ -465,6 +621,18 @@
               "type": "array"
             },
             "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "keywordsAll": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "keywordsAny": {
               "items": {
                 "type": "string"
               },
@@ -561,6 +729,18 @@
                 "type": "string"
               },
               "type": "array"
+            },
+            "keywordsAll": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "keywordsAny": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
             }
           },
           "type": "object"
@@ -582,6 +762,39 @@
           },
           "type": "object"
         },
+        "bareResource": {
+          "$ref": "#/definitions/Asset"
+        },
+        "constraints": {
+          "additionalProperties": false,
+          "properties": {
+            "all": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "any": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "none": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "not": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
         "current": {
           "$ref": "#/definitions/Base"
         },
@@ -595,6 +808,18 @@
               "type": "array"
             },
             "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "keywordsAll": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "keywordsAny": {
               "items": {
                 "type": "string"
               },
@@ -673,6 +898,9 @@
         },
         "Describe": {
           "type": "boolean"
+        },
+        "Group By": {
+          "type": "string"
         },
         "Group Includes": {
           "type": "boolean"
@@ -753,12 +981,16 @@
         },
         "slug": {
           "type": "string"
+        },
+        "source": {
+          "type": "string"
         }
       },
       "required": [
         "slug",
         "name",
-        "game"
+        "game",
+        "source"
       ],
       "type": "object"
     },
@@ -814,6 +1046,9 @@
           "type": "string"
         },
         "wip": {
+          "type": "boolean"
+        },
+        "isModule": {
           "type": "boolean"
         }
       },
@@ -910,6 +1145,9 @@
         "order": {
           "type": "number"
         },
+        "prepend": {
+          "type": "boolean"
+        },
         "term": {
           "type": "string"
         },
@@ -926,9 +1164,6 @@
           "type": "array"
         }
       },
-      "required": [
-        "order"
-      ],
       "type": "object"
     },
     "RankTracking": {
@@ -1091,6 +1326,12 @@
         "result": {
           "additionalProperties": false,
           "properties": {
+            "array": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
             "float": {
               "type": "number"
             },

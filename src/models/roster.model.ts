@@ -1,7 +1,7 @@
 import { Asset } from './object.model';
 import { Breadcrumbs } from './app.model';
 
-export type Visible = 'hidden' | 'public' | 'friends';
+export type Visible = 'hidden'|'public'|'friends';
 export class Roster {
   public slug?: string = '';
   public key: string = '';
@@ -11,6 +11,7 @@ export class Roster {
   public authors?: string[] = [];
   public visible?: Visible = 'hidden';
   public locked?: boolean = false;
+  public viewMode?: 'table'|'card'|'list'|'inventory' = 'inventory';
 
   public created_at?: string;
   public updated_at?: string;

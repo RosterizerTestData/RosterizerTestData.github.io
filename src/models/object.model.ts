@@ -24,10 +24,20 @@ export class Base {
   public allowed?: {
     classifications?: string[],
     items?: string[],
+    keywordsAny?: string[],
+    keywordsAll?: string[],
   } = {};
   public disallowed?: {
     classifications?: string[],
     items?: string[],
+    keywordsAny?: string[],
+    keywordsAll?: string[],
+  } = {};
+  public constraints?:{
+    any?: string[],
+    all?: string[],
+    none?: string[],
+    not?: string[],
   } = {};
   public meta?: {[name:string]:any} = {};
   public text?: string = '';
@@ -46,13 +56,14 @@ export class Classification extends Base {
 }
 
 export class ItemAspects {
-  public Rename?: boolean = false;
-  public Describe?: boolean = false;
-  public 'Lock Qty'?: boolean = false;
-  public Unique?: boolean = false;
-  public Collapse?: boolean = false;
   public Type?: ItemType = 'conceptual';
   public Visibility?: AssetVisibility = 'always';
+  public 'Group By'?: string = null;
+  public 'Lock Qty'?: boolean = false;
+  public Unique?: boolean = false;
+  public Rename?: boolean = false;
+  public Describe?: boolean = false;
+  public Collapse?: boolean = false;
   public 'Group Traits'?: boolean = false;
   public 'Order Traits A–Z'?: boolean = false;
   public 'Group Includes'?: boolean = false;
@@ -62,11 +73,13 @@ export class ItemAspects {
 export type ItemType = 'conceptual' | 'game piece' | 'add-on';
 
 export class Item extends Classification {
+  public bareResource?: Asset;
 }
 
 export class Asset extends Item {
   public item: string = '';
   public classification?: string = '';
+  public classIdentity?: string = '';
   public designation?: string = '';
   public id?: string = '';
   public quantity?: number = 1;
