@@ -4,13 +4,21 @@
   This means that the output of this tool may not fit the needs of its game system well, and will most likely need to be adjusted. <em>(but at least all the stats and assets are pre-generated!)</em>
 </p>
 <div class="form">
-  <input
+  <textarea
     placeholder="url to a (raw xml) catalog, e.g. https://raw.githubusercontent.com/BSData/....cat"
     [formControl]="urlField"
-  >
+  ></textarea>
   <button (click)="onTranslate()" type="button">Translate</button>
-  <button (click)="onClip()" [disabled]="clipped || !mhp" type="button">Clip</button>
-  <button (click)="exportCSVs($event)" [disabled]="!mhp" type="button">CSVs</button>
+  <button (click)="exportAllCSVs($event)" [disabled]="!mhps?.length" type="button">CSVs</button>
 </div>
 
-<ngx-json-viewer *ngIf="mhp" [json]="mhp" [depth]="2"></ngx-json-viewer>
+<ng-container
+  *ngFor="let mhp of mhps; let i = index"
+>
+  <h2>
+    {{mhp.name}}
+    <button (click)="onClip(i)" [disabled]="!mhp" type="button">Clip</button>
+    <button (click)="exportCSVs(i)" [disabled]="!mhp" type="button">CSVs</button>
+  </h2>
+  <ngx-json-viewer [json]="mhp" [depth]="0"></ngx-json-viewer>
+</ng-container>

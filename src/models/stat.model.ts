@@ -45,7 +45,7 @@ export interface RankTracking {
   [name:string]: number // the value to add
 }
 
-// default is the value as set by the manifest.
+// default is the value as set by the rulebook.
 // original is the value as set by the user.
 // current is what the value is calulcated to be, by bubbling up tracked stats and rules editing it.
 export class StatProcessed{

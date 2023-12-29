@@ -1,10 +1,10 @@
 import { Classification, Item, Asset, AssetError } from './object.model'
 import { Breadcrumbs, ErrorType } from './app.model';
 
-export class Manifest {
+export class Rulebook {
   public slug: string = '';
   public key: string = '';
-  public manifest_id: string = '';
+  public rulebook_id: string = '';
   public user_id: string = '';
   
   public hash: string = '';
@@ -16,51 +16,51 @@ export class Manifest {
   public deleted_at?: string;
 
   public processed: {
-    composedDependencies?: ManifestData,
-    dependencies?: ManifestDependency[],
+    composedDependencies?: RulebookData,
+    dependencies?: RulebookDependency[],
     assetInventory?: { [name: string]: Asset },
     assetMorphology?: {[name: string]: Classification},
     hierarchy?: {[name: string]: Hierarchy},
     unclassified?: string[],
     source?: {url?: string, data?: any},
-    lineage?: ManifestDependency[],
+    lineage?: RulebookDependency[],
     errors?: AssetError[],
   } = {};
-  public history: ManifestHistory = new ManifestHistory();
+  public history: RulebookHistory = new RulebookHistory();
 }
 
-export class ManifestHistory {
-  public past: ManifestHistoryItem[] = [];
-  public present: ManifestHistoryItem = new ManifestHistoryItem();
-  public subsequent: ManifestHistoryItem[] = [];
+export class RulebookHistory {
+  public past: RulebookHistoryItem[] = [];
+  public present: RulebookHistoryItem = new RulebookHistoryItem();
+  public subsequent: RulebookHistoryItem[] = [];
 }
 
-export class ManifestHistoryItem {
+export class RulebookHistoryItem {
   public name: string = '';
   public id?: string[] = ['assetCatalog','Roster'];
-  public note?: string = 'Manifest Created';
+  public note?: string = 'Rulebook Created';
   public updated_at?: string = '';
   public updatedObject?: Breadcrumbs;
   public revision: string = '0.0.1';
   public wip: boolean = true;
   public isModule?: boolean;
-  public dependencies?: ManifestDependency[];
+  public dependencies?: RulebookDependency[];
   public game: string = '';
   public genre: string = 'generic';
   public publisher: string = '';
   public url: string = '';
   public notes: string = '';
   public source?: string;
-  public manifest: ManifestData = new ManifestData();
+  public rulebook: RulebookData = new RulebookData();
 }
 
-export class ManifestDependency {
+export class RulebookDependency {
   public slug: string = '';
   public name: string = '';
   public game: string = '';
   public source: string = '';
 }
-export class ManifestData {
+export class RulebookData {
   public assetTaxonomy: { [name: string]: Classification } = { };
   public assetCatalog: { [name: string]: Item } = { 'Roster§Roster': {}};
   public gameModes?: {} = {};

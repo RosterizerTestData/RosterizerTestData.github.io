@@ -1,6 +1,6 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { AfterViewInit, Component, HostListener, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Manifest, ManifestHistoryItem } from 'src/models/manifest.model';
+import { Rulebook, RulebookHistoryItem } from 'src/models/rulebook.model';
 import { Asset, Item } from 'src/models/object.model';
 import * as xml2js from 'xml2js';
 import * as JSZip from 'jszip';
@@ -11,154 +11,165 @@ import { saveAs } from 'file-saver';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.sass']
 })
-export class AppComponent implements OnInit {
-  @HostListener('document:keyup', ['$event'])
-  keyEvent(event: KeyboardEvent) {
-    if(event.key === 'Enter'){
-      this.onTranslate();
-    }
-  }
+export class AppComponent implements AfterViewInit {
   title = 'battlescribe-to-rosterizer';
-  urlField: FormControl = new FormControl('');
+  urlField: FormControl = new FormControl(``);
   parser;
-  manifest: Manifest;
-  mhp: ManifestHistoryItem;
-  clipped: boolean = false;
+  mhps: RulebookHistoryItem[] = [];
 
   constructor() {
     this.parser = new xml2js.Parser({ strict: false, trim: true });
-    this.onTranslate = this.onTranslate.bind(this)
+    this.onTranslate = this.onTranslate.bind(this);
   }
-  ngOnInit(){
+  ngAfterViewInit(): void {
+    let textarea = document.getElementsByTagName('textarea')[0];
+    if (textarea) {
+      console.log(textarea)
+      textarea.addEventListener('input', () => {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+      });
+
+      // Initialize the textarea height
+      textarea.style.height = textarea.scrollHeight + 'px';
+    }
   }
   
-  onTranslate(){
-    fetch('https://api.codetabs.com/v1/proxy?quest=' + this.urlField.value).then((res) => res.text()).then((body) => {
-      this.parser.parseString(body, (err, result) => {
-        let IDResult = this.findIDs(result)
-        this.manifest = new Manifest;
-        this.mhp = this.manifest.history.present;
-        delete this.mhp.id;
-        delete this.mhp.note;
-        delete this.mhp.updatedObject;
-        delete this.mhp.updated_at;
-        delete this.mhp.source;
-        console.log(JSON.parse(JSON.stringify(this.mhp)))
-        this.mhp.notes = 'This data was translated automatically from a battlescribe catalog. Only asset names and bare stats have been translated and considerable editing is required in order for it to become useful in Rosterizer.';
-        console.log(result);
-        console.log(IDResult);
-        ['CATALOGUE','GAMESYSTEM'].forEach(topLevel => {
-          Object.keys(result[topLevel] || {})?.forEach(subCat => {
-            let subCats = result[topLevel][subCat];
-            if(!Array.isArray(subCats)){
-              this.mhp.name = subCats.NAME;
-            }else{
-              switch (subCat) {
-                case 'FORCEENTRIES':
-                  subCats.forEach(element => {
-                    element.FORCEENTRY?.forEach(forceEntry => {
-                      this.mapForceEntries('Roster§Roster',forceEntry);
-                    });
-                  });
-                  break;
-                case 'CATEGORYLINKS':
-                  if(topLevel === 'GAMESYSTEM'){
+  async onTranslate(){
+    this.mhps = [];
+    let urls = this.urlField.value.split('\n');
+    // remove anything that doesn't look like a url
+    const urlPattern = /^(https?:\/\/)?([\w.-]+)\.([a-z]{2,})(\/\S*)?$/i;
+    urls = urls.filter(url => urlPattern.test(url));
+    console.log(urls)
+    urls.forEach(url => {
+      fetch('https://api.codetabs.com/v1/proxy?quest=' + url).then((res) => res.text()).then((body) => {
+        this.parser.parseString(body, (err, result) => {
+          let IDResult = this.findIDs(result);
+          this.mhps.push(new RulebookHistoryItem);
+          let i = this.mhps.length - 1;
+          delete this.mhps[i].id;
+          delete this.mhps[i].note;
+          delete this.mhps[i].updatedObject;
+          delete this.mhps[i].updated_at;
+          delete this.mhps[i].source;
+          // get game name from url as substring between 'BSData/' and '/master'
+          this.mhps[i].game = url.substring(url.indexOf('BSData/') + 7, url.indexOf('/master'));
+          console.log(JSON.parse(JSON.stringify(this.mhps[i])))
+          this.mhps[i].notes = 'This data was translated automatically from a battlescribe catalog. Only asset names and bare stats have been translated and considerable editing is required in order for it to become useful in Rosterizer.';
+          console.log(url,body,result);
+          console.log(IDResult);
+          ['CATALOGUE','GAMESYSTEM'].forEach(topLevel => {
+            Object.keys(result[topLevel] || {})?.forEach(subCat => {
+              let subCats = result[topLevel][subCat];
+              if(!Array.isArray(subCats)){
+                this.mhps[i].name = subCats.NAME;
+              }else{
+                switch (subCat) {
+                  case 'FORCEENTRIES':
                     subCats.forEach(element => {
-                      element.ENTRYLINK?.forEach(entryLink => {
-                        this.mapMasterEntryLink('Roster§Roster',entryLink,IDResult);
+                      element.FORCEENTRY?.forEach(forceEntry => {
+                        this.mapForceEntries(i,'Roster§Roster',forceEntry);
                       });
                     });
-                  }
-                  break;
-                case 'ENTRYLINKS':
-                  if(topLevel === 'GAMESYSTEM'){
+                    break;
+                  case 'CATEGORYLINKS':
+                    if(topLevel === 'GAMESYSTEM'){
+                      subCats.forEach(element => {
+                        element.ENTRYLINK?.forEach(entryLink => {
+                          this.mapMasterEntryLink(i,'Roster§Roster',entryLink,IDResult);
+                        });
+                      });
+                    }
+                    break;
+                  case 'ENTRYLINKS':
+                    if(topLevel === 'GAMESYSTEM'){
+                      subCats.forEach(element => {
+                        element.ENTRYLINK?.forEach(entryLink => {
+                          this.mapMasterEntryLink(i,'Roster§Roster',entryLink,IDResult);
+                        });
+                      });
+                    }
+                    break;
+                  case 'SHAREDPROFILES':
                     subCats.forEach(element => {
-                      element.ENTRYLINK?.forEach(entryLink => {
-                        this.mapMasterEntryLink('Roster§Roster',entryLink,IDResult);
+                      element.PROFILE?.forEach(profile => {
+                        this.mapProfile(i,profile);
                       });
                     });
-                  }
-                  break;
-                case 'SHAREDPROFILES':
-                  subCats.forEach(element => {
-                    element.PROFILE?.forEach(profile => {
-                      this.mapProfile(profile);
+                    break;
+                  case 'SHAREDRULES':
+                    subCats.forEach(element => {
+                      element.RULE?.forEach(rule => {
+                        this.mapRule(i,rule);
+                      });
                     });
-                  });
-                  break;
-                case 'SHAREDRULES':
-                  subCats.forEach(element => {
-                    element.RULE?.forEach(rule => {
-                      this.mapRule(rule);
+                    break;
+                  case 'SELECTIONENTRIES':
+                    subCats.forEach(element => {
+                      element.SELECTIONENTRY?.forEach(selection => {
+                        console.log(subCat,selection)
+                        this.mapSelection(i,selection,result,IDResult,1);
+                      });
                     });
-                  });
-                  break;
-                case 'SELECTIONENTRIES':
-                  subCats.forEach(element => {
-                    element.SELECTIONENTRY?.forEach(selection => {
-                      console.log(subCat,selection)
-                      this.mapSelection(selection,result,IDResult,1);
+                    break;
+                  case 'SHAREDSELECTIONENTRIES':
+                    subCats.forEach(element => {
+                      element.SELECTIONENTRY?.forEach(selection => {
+                        console.log(subCat,selection)
+                        this.mapSelection(i,selection,result,IDResult,1);
+                      });
                     });
-                  });
-                  break;
-                case 'SHAREDSELECTIONENTRIES':
-                  subCats.forEach(element => {
-                    element.SELECTIONENTRY?.forEach(selection => {
-                      console.log(subCat,selection)
-                      this.mapSelection(selection,result,IDResult,1);
-                    });
-                  });
-                  break;
-                case 'SHAREDSELECTIONENTRYGROUPS':
-                  subCats.forEach(element => {
-                    element.SELECTIONENTRYGROUP?.forEach(group => {
-                      let classOverride = group.$.NAME
-                      console.log(subCat,classOverride,group)
-                      group.SELECTIONENTRIES?.forEach(element => {
-                        element.SELECTIONENTRY.forEach(selection => {
-                          this.mapSelection(selection,result,IDResult,1,classOverride);
+                    break;
+                  case 'SHAREDSELECTIONENTRYGROUPS':
+                    subCats.forEach(element => {
+                      element.SELECTIONENTRYGROUP?.forEach(group => {
+                        let classOverride = group.$.NAME
+                        console.log(subCat,classOverride,group)
+                        group.SELECTIONENTRIES?.forEach(element => {
+                          element.SELECTIONENTRY.forEach(selection => {
+                            this.mapSelection(i,selection,result,IDResult,1,classOverride);
+                          });
                         });
                       });
                     });
-                  });
-                  break;
-                default:
-                  break;
+                    break;
+                  default:
+                    break;
+                }
               }
-            }
+            });
           });
+          this.orderRulebookHistory(this.mhps[i]);
+          // console.log(this.mhp)
         });
-        this.orderManifest(this.manifest);
-        this.clipped = false;
-        // console.log(this.mhp)
       });
     });
   }
-  onClip(){
-    window.navigator['clipboard'].writeText(JSON.stringify(this.mhp, null, 4));
-    this.clipped = true;
+  onClip(i){
+    window.navigator['clipboard'].writeText(JSON.stringify(this.mhps[i], null, 4));
   }
-  mapProfile(profile){
+  mapProfile(i,profile){
     let itemClass = this.ucFirst(profile.$.TYPENAME);
     let itemDesignation = this.ucFirst(profile.$.NAME);
     let itemKey = itemClass + '§' + itemDesignation;
-    this.mhp.manifest.assetTaxonomy[itemClass] = this.mhp.manifest.assetTaxonomy[itemClass] || {};
-    this.mhp.manifest.assetCatalog[itemKey] = this.mhp.manifest.assetCatalog[itemKey] || {};
+    this.mhps[i].rulebook.assetTaxonomy[itemClass] = this.mhps[i].rulebook.assetTaxonomy[itemClass] || {};
+    this.mhps[i].rulebook.assetCatalog[itemKey] = this.mhps[i].rulebook.assetCatalog[itemKey] || {};
     profile.CHARACTERISTICS?.forEach(char => {
       char.CHARACTERISTIC?.forEach(stat => {
-        this.mapStats(stat,itemKey);
+        this.mapStats(i, stat,itemKey);
       });
     });
   }
-  mapRule(rule){
+  mapRule(i,rule){
     let itemClass = 'Rule';
     let itemDesignation = this.ucFirst(rule.$.NAME);
     let itemKey = itemClass + '§' + itemDesignation;
-    this.mhp.manifest.assetTaxonomy[itemClass] = this.mhp.manifest.assetTaxonomy[itemClass] || {};
-    this.mhp.manifest.assetCatalog[itemKey] = this.mhp.manifest.assetCatalog[itemKey] || {};
-    this.mhp.manifest.assetCatalog[itemKey].text = rule.DESCRIPTION?.join('\n\n');
+    this.mhps[i].rulebook.assetTaxonomy[itemClass] = this.mhps[i].rulebook.assetTaxonomy[itemClass] || {};
+    this.mhps[i].rulebook.assetCatalog[itemKey] = this.mhps[i].rulebook.assetCatalog[itemKey] || {};
+    this.mhps[i].rulebook.assetCatalog[itemKey].text = rule.DESCRIPTION?.join('\n\n');
   }
-  mapInfoLink(itemKey,infoLink,IDResult){
+  mapInfoLink(i,itemKey,infoLink,IDResult){
     let traitClass = this.ucFirst(IDResult[IDResult[infoLink.$.TARGETID]?.ID]?.$.TYPE || IDResult[IDResult[infoLink.$.TARGETID]?.ID]?.$.TYPENAME || IDResult[infoLink.$.TARGETID]?.$.TYPE || IDResult[infoLink.$.TARGETID]?.$.TYPENAME || infoLink.$.TYPE || infoLink.$.TYPENAME);
     let traitDesignation = this.ucFirst(infoLink.$.NAME);
     let traitKey = traitClass + '§' + traitDesignation;
@@ -168,159 +179,160 @@ export class AppComponent implements OnInit {
       // console.log(profile)
       profile?.CHARACTERISTICS?.forEach(element => {
         element.CHARACTERISTIC?.forEach(stat => {
-          this.mapStats(stat, itemKey);
+          this.mapStats(i, stat, itemKey);
         });
       });
     }else{
-      this.mhp.manifest.assetTaxonomy[traitClass] = this.mhp.manifest.assetTaxonomy[traitClass] || {};
-      this.mhp.manifest.assetCatalog[traitKey] = this.mhp.manifest.assetCatalog[traitKey] || {};
-      this.mhp.manifest.assetCatalog[itemKey] = this.mhp.manifest.assetCatalog[itemKey] || {};
-      this.mhp.manifest.assetCatalog[itemKey].assets = this.mhp.manifest.assetCatalog[itemKey].assets || {};
-      this.mhp.manifest.assetCatalog[itemKey].assets.traits = this.mhp.manifest.assetCatalog[itemKey].assets.traits || [];
-      this.mhp.manifest.assetCatalog[itemKey].assets.traits.push(traitKey);
+      this.mhps[i].rulebook.assetTaxonomy[traitClass] = this.mhps[i].rulebook.assetTaxonomy[traitClass] || {};
+      this.mhps[i].rulebook.assetCatalog[traitKey] = this.mhps[i].rulebook.assetCatalog[traitKey] || {};
+      this.mhps[i].rulebook.assetCatalog[itemKey] = this.mhps[i].rulebook.assetCatalog[itemKey] || {};
+      this.mhps[i].rulebook.assetCatalog[itemKey].assets = this.mhps[i].rulebook.assetCatalog[itemKey].assets || {};
+      this.mhps[i].rulebook.assetCatalog[itemKey].assets.traits = this.mhps[i].rulebook.assetCatalog[itemKey].assets.traits || [];
+      this.mhps[i].rulebook.assetCatalog[itemKey].assets.traits.push(traitKey);
     }
   }
-  mapMasterEntryLink(itemKey,entryLink,IDResult){
-    if(!entryLink.hasOwnProperty('MODIFIERS')) this.mapStats(entryLink,itemKey)
+  mapMasterEntryLink(i,itemKey,entryLink,IDResult){
+    if(!entryLink.hasOwnProperty('MODIFIERS')) this.mapStats(i,entryLink,itemKey)
     else {
       let assetClass = this.ucFirst(IDResult[IDResult[entryLink.$.TARGETID]?.ID]?.$.TYPE || IDResult[IDResult[entryLink.$.TARGETID]?.ID]?.$.TYPENAME || IDResult[entryLink.$.TARGETID]?.$.TYPE || IDResult[entryLink.$.TARGETID]?.$.TYPENAME || entryLink.$.TYPE || entryLink.$.TYPENAME);
       let assetDesignation = this.ucFirst(entryLink.$.NAME);
       let assetKey = assetClass + '§' + assetDesignation;
     }
   }
-  mapEntryLink(itemKey,entryLink,IDResult,depth){
+  mapEntryLink(i,itemKey,entryLink,IDResult,depth){
     let traitClass = this.ucFirst(IDResult[IDResult[entryLink.$.TARGETID]?.ID]?.$.TYPE || IDResult[IDResult[entryLink.$.TARGETID]?.ID]?.$.TYPENAME || IDResult[entryLink.$.TARGETID]?.$.TYPE || IDResult[entryLink.$.TARGETID]?.$.TYPENAME || entryLink.$.TYPE || entryLink.$.TYPENAME);
     let traitDesignation = this.ucFirst(entryLink.$.NAME);
     let traitKey = traitClass + '§' + traitDesignation;
-    this.mhp.manifest.assetTaxonomy[traitClass] = this.mhp.manifest.assetTaxonomy[traitClass] || {};
-    this.mhp.manifest.assetCatalog[traitKey] = this.mhp.manifest.assetCatalog[traitKey] || {};
-    this.mhp.manifest.assetCatalog[itemKey] = this.mhp.manifest.assetCatalog[itemKey] || {};
-    this.mhp.manifest.assetCatalog[itemKey].assets = this.mhp.manifest.assetCatalog[itemKey].assets || {};
-    this.mhp.manifest.assetCatalog[itemKey].assets.traits = this.mhp.manifest.assetCatalog[itemKey].assets.traits || [];
-    this.mhp.manifest.assetCatalog[itemKey].assets.traits.push(traitKey)
+    this.mhps[i].rulebook.assetTaxonomy[traitClass] = this.mhps[i].rulebook.assetTaxonomy[traitClass] || {};
+    this.mhps[i].rulebook.assetCatalog[traitKey] = this.mhps[i].rulebook.assetCatalog[traitKey] || {};
+    this.mhps[i].rulebook.assetCatalog[itemKey] = this.mhps[i].rulebook.assetCatalog[itemKey] || {};
+    this.mhps[i].rulebook.assetCatalog[itemKey].assets = this.mhps[i].rulebook.assetCatalog[itemKey].assets || {};
+    this.mhps[i].rulebook.assetCatalog[itemKey].assets.traits = this.mhps[i].rulebook.assetCatalog[itemKey].assets.traits || [];
+    this.mhps[i].rulebook.assetCatalog[itemKey].assets.traits.push(traitKey)
   }
-  mapForceEntries(itemKey,forceEntry){
+  mapForceEntries(i,itemKey,forceEntry){
     let forceClass = 'Force';
     let forceDesignation = this.ucFirst(forceEntry.$.NAME);
     let forceKey = forceClass + '§' + forceDesignation;
-    this.mhp.manifest.assetTaxonomy[forceClass] = this.mhp.manifest.assetTaxonomy[forceClass] || {};
-    this.mhp.manifest.assetCatalog[forceKey] = this.mhp.manifest.assetCatalog[forceKey] || {};
+    this.mhps[i].rulebook.assetTaxonomy[forceClass] = this.mhps[i].rulebook.assetTaxonomy[forceClass] || {};
+    this.mhps[i].rulebook.assetCatalog[forceKey] = this.mhps[i].rulebook.assetCatalog[forceKey] || {};
     forceEntry.FORCEENTRIES?.forEach(entries => {
       entries.FORCEENTRY.forEach(subForceEntry => {
-        this.mapSubForceEntries(forceKey,subForceEntry);
+        this.mapSubForceEntries(i,forceKey,subForceEntry);
       });
     });
   }
-  mapSubForceEntries(forceKey,subForceEntry){
+  mapSubForceEntries(i,forceKey,subForceEntry){
     let subForceClass = 'Force';
     let subForceDesignation = this.ucFirst(subForceEntry.$.NAME);
     let subForceKey = subForceClass + '§' + subForceDesignation;
-    this.mhp.manifest.assetTaxonomy[subForceClass] = this.mhp.manifest.assetTaxonomy[subForceClass] || {};
-    this.mhp.manifest.assetCatalog[subForceKey] = this.mhp.manifest.assetCatalog[subForceKey] || {};
+    this.mhps[i].rulebook.assetTaxonomy[subForceClass] = this.mhps[i].rulebook.assetTaxonomy[subForceClass] || {};
+    this.mhps[i].rulebook.assetCatalog[subForceKey] = this.mhps[i].rulebook.assetCatalog[subForceKey] || {};
   }
-  mapSubProfile(itemKey,profile){
-    profile.PROFILE.forEach((profile,i) => {
+  mapSubProfile(i,itemKey,profile){
+    profile.PROFILE.forEach(profile => {
       let targetKey = itemKey
       if(profile.$.TYPENAME.toLowerCase() !== 'profile'){
         let subItemClass = profile.$.TYPENAME;
-        this.mhp.manifest.assetTaxonomy[subItemClass] = this.mhp.manifest.assetTaxonomy[subItemClass] || {};
+        this.mhps[i].rulebook.assetTaxonomy[subItemClass] = this.mhps[i].rulebook.assetTaxonomy[subItemClass] || {};
         targetKey = profile.$.TYPENAME + '§' + profile.$.NAME;
       }
-      this.mhp.manifest.assetCatalog[targetKey] = this.mhp.manifest.assetCatalog[targetKey] || {};
+      this.mhps[i].rulebook.assetCatalog[targetKey] = this.mhps[i].rulebook.assetCatalog[targetKey] || {};
       profile.CHARACTERISTICS?.forEach(char => {
         char.CHARACTERISTIC?.forEach(characteristic => {
           // console.log(itemKey,targetKey,profile,characteristic)
-          if(characteristic._?.length > 15) this.mhp.manifest.assetCatalog[targetKey].text = characteristic._;
-          else this.mapStats(characteristic, targetKey);
+          if(characteristic._?.length > 15) this.mhps[i].rulebook.assetCatalog[targetKey].text = characteristic._;
+          else this.mapStats(i,characteristic, targetKey);
         });
       });
       if(targetKey !== itemKey){
-        this.mhp.manifest.assetCatalog[itemKey].assets = this.mhp.manifest.assetCatalog[itemKey].assets || {};
-        this.mhp.manifest.assetCatalog[itemKey].assets.traits = this.mhp.manifest.assetCatalog[itemKey].assets.traits || [];
-        this.mhp.manifest.assetCatalog[itemKey].assets.traits.push(targetKey);
+        this.mhps[i].rulebook.assetCatalog[itemKey].assets = this.mhps[i].rulebook.assetCatalog[itemKey].assets || {};
+        this.mhps[i].rulebook.assetCatalog[itemKey].assets.traits = this.mhps[i].rulebook.assetCatalog[itemKey].assets.traits || [];
+        this.mhps[i].rulebook.assetCatalog[itemKey].assets.traits.push(targetKey);
       }
     });
   }
-  mapSelection(selection, result, IDResult, depth: number, classOverride?: string){
+  mapSelection(i, selection, result, IDResult, depth: number, classOverride?: string){
     let itemClass = classOverride || this.ucFirst(selection.$.TYPE);
     let itemDesignation = this.ucFirst(selection.$.NAME);
     let itemKey = itemClass + '§' + itemDesignation;
-    this.mhp.manifest.assetTaxonomy[itemClass] = this.mhp.manifest.assetTaxonomy[itemClass] || {};
-    this.mhp.manifest.assetCatalog[itemKey] = this.mhp.manifest.assetCatalog[itemKey] || {};
-    // console.log(itemKey,JSON.parse(JSON.stringify(this.mhp.manifest.assetCatalog[itemKey])))
+    this.mhps[i].rulebook.assetTaxonomy[itemClass] = this.mhps[i].rulebook.assetTaxonomy[itemClass] || {};
+    this.mhps[i].rulebook.assetCatalog[itemKey] = this.mhps[i].rulebook.assetCatalog[itemKey] || {};
+    // console.log(itemKey,JSON.parse(JSON.stringify(this.mhps[i].rulebook.assetCatalog[itemKey])))
 
     selection.CHARACTERISTICS?.forEach(char => {
       char.CHARACTERISTIC?.forEach(stat => {
-        this.mapStats(stat, itemKey);
+        this.mapStats(i, stat, itemKey);
       });
     });
-    // console.log(itemKey,JSON.parse(JSON.stringify(this.mhp.manifest.assetCatalog[itemKey])))
+    // console.log(itemKey,JSON.parse(JSON.stringify(this.mhps[i].rulebook.assetCatalog[itemKey])))
     selection.COSTS?.forEach(co => {
       co.COST?.forEach(stat => {
-        this.mapStats(stat, itemKey, true);
+        this.mapStats(i, stat, itemKey, true);
       });
     });
-    // console.log(itemKey,JSON.parse(JSON.stringify(this.mhp.manifest.assetCatalog[itemKey])))
+    // console.log(itemKey,JSON.parse(JSON.stringify(this.mhps[i].rulebook.assetCatalog[itemKey])))
     selection.INFOLINKS?.forEach(link => {
       // console.log(itemKey,link)
       link.INFOLINK.forEach(infoLink => {
-        this.mapInfoLink(itemKey,infoLink,IDResult);
+        this.mapInfoLink(i,itemKey,infoLink,IDResult);
       });
     });
-    // console.log(itemKey,JSON.parse(JSON.stringify(this.mhp.manifest.assetCatalog[itemKey])))
+    // console.log(itemKey,JSON.parse(JSON.stringify(this.mhps[i].rulebook.assetCatalog[itemKey])))
     selection.ENTRYLINKS?.forEach(link => {
       link.ENTRYLINK.forEach(entryLink => {
-        this.mapEntryLink(itemKey,entryLink,IDResult,depth);
+        this.mapEntryLink(i,itemKey,entryLink,IDResult,depth);
       });
     });
-    // console.log(itemKey,JSON.parse(JSON.stringify(this.mhp.manifest.assetCatalog[itemKey])))
+    // console.log(itemKey,JSON.parse(JSON.stringify(this.mhps[i].rulebook.assetCatalog[itemKey])))
     selection.CATEGORYLINKS?.forEach(category => {
-      this.mapKeywords(itemKey,category.CATEGORYLINK,IDResult);
+      this.mapKeywords(i,itemKey,category.CATEGORYLINK,IDResult);
     });
-    // console.log(itemKey,JSON.parse(JSON.stringify(this.mhp.manifest.assetCatalog[itemKey])))
+    // console.log(itemKey,JSON.parse(JSON.stringify(this.mhps[i].rulebook.assetCatalog[itemKey])))
     selection.PROFILES?.forEach(profile => {
       // console.log(itemKey,profile)
-      this.mapSubProfile(itemKey,profile);
+      this.mapSubProfile(i,itemKey,profile);
     });
-    // console.log(itemKey,JSON.parse(JSON.stringify(this.mhp.manifest.assetCatalog[itemKey])))
+    // console.log(itemKey,JSON.parse(JSON.stringify(this.mhps[i].rulebook.assetCatalog[itemKey])))
     selection.SELECTIONENTRIES?.forEach(element => {
       element.SELECTIONENTRY?.forEach(selection => {
         // console.log(itemKey,selection)
-        let selectionTraitKey = this.mapSelection(selection,result,IDResult,depth ++);
+        let selectionTraitKey = this.mapSelection(i,selection,result,IDResult,depth ++);
         // console.log(itemKey,selectionTraitKey)
-        this.mhp.manifest.assetCatalog[itemKey].assets = this.mhp.manifest.assetCatalog[itemKey].assets || {};
-        this.mhp.manifest.assetCatalog[itemKey].assets.traits = this.mhp.manifest.assetCatalog[itemKey].assets.traits || [];
-        this.mhp.manifest.assetCatalog[itemKey].assets.traits.push(selectionTraitKey);
+        this.mhps[i].rulebook.assetCatalog[itemKey].assets = this.mhps[i].rulebook.assetCatalog[itemKey].assets || {};
+        this.mhps[i].rulebook.assetCatalog[itemKey].assets.traits = this.mhps[i].rulebook.assetCatalog[itemKey].assets.traits || [];
+        this.mhps[i].rulebook.assetCatalog[itemKey].assets.traits.push(selectionTraitKey);
       });
     });
     selection.SELECTIONENTRYGROUPS?.forEach(group => {
+      this.mhps[i].rulebook.assetCatalog[itemKey].stats = this.mhps[i].rulebook.assetCatalog[itemKey].stats || {};
       group.SELECTIONENTRYGROUP?.forEach(entry => {
         console.log(itemKey,entry)
-        this.mhp.manifest.assetCatalog[itemKey].stats[entry.$.NAME] = {
+        this.mhps[i].rulebook.assetCatalog[itemKey].stats[entry.$.NAME] = {
           statType: 'rank',
           ranks: {},
         }
         entry.ENTRYLINKS?.forEach(element => {
-          if(element.ENTRYLINK.length > 1) this.mhp.manifest.assetCatalog[itemKey].stats[entry.$.NAME].ranks['-'] = {order:0};
-          element.ENTRYLINK.forEach((link,i) => {
-            this.mhp.manifest.assetCatalog[itemKey].stats[entry.$.NAME].ranks[link.$.NAME] = {order:i+1};
+          if(element.ENTRYLINK.length > 1) this.mhps[i].rulebook.assetCatalog[itemKey].stats[entry.$.NAME].ranks['-'] = {order:0};
+          element.ENTRYLINK.forEach((link,j) => {
+            this.mhps[i].rulebook.assetCatalog[itemKey].stats[entry.$.NAME].ranks[link.$.NAME] = {order:j+1};
           });
         });
         entry.SELECTIONENTRIES?.forEach(element => {
-          if(element.SELECTIONENTRY.length > 1) this.mhp.manifest.assetCatalog[itemKey].stats[entry.$.NAME].ranks['-'] = {order:0};
-          element.SELECTIONENTRY.forEach((selection,i) => {
-            this.mhp.manifest.assetCatalog[itemKey].stats[entry.$.NAME].ranks[selection.$.NAME] = {order:i+1};
+          if(element.SELECTIONENTRY.length > 1) this.mhps[i].rulebook.assetCatalog[itemKey].stats[entry.$.NAME].ranks['-'] = {order:0};
+          element.SELECTIONENTRY.forEach((selection,j) => {
+            this.mhps[i].rulebook.assetCatalog[itemKey].stats[entry.$.NAME].ranks[selection.$.NAME] = {order:j+1};
           });
         });
       });
     });
-    // console.log(itemKey,JSON.parse(JSON.stringify(this.mhp.manifest.assetCatalog[itemKey])))
+    // console.log(itemKey,JSON.parse(JSON.stringify(this.mhps[i].rulebook.assetCatalog[itemKey])))
     return itemKey
   }
-  mapStats(stat: any, itemKey: string, cost: boolean = false){
+  mapStats(i, stat: any, itemKey: string, cost: boolean = false){
     // if(itemKey.includes('⚔ Null rod'))  console.log('mapStats',itemKey,stat)
-    let item = this.mhp.manifest.assetCatalog[itemKey];
-    let classification = itemKey.split('§')[0] === 'Roster' ? item : this.mhp.manifest.assetTaxonomy[itemKey.split('§')[0]];
+    let item = this.mhps[i].rulebook.assetCatalog[itemKey];
+    let classification = itemKey.split('§')[0] === 'Roster' ? item : this.mhps[i].rulebook.assetTaxonomy[itemKey.split('§')[0]];
     if(['Description','Details','Abilities'].includes(stat.$.NAME)){
       if(stat._ !== '-') item.text = stat._;
     }else{
@@ -342,8 +354,8 @@ export class AppComponent implements OnInit {
       }
     }
   }
-  mapKeywords(itemKey: string, categories, IDResult){
-    let item = this.mhp.manifest.assetCatalog[itemKey];
+  mapKeywords(i, itemKey: string, categories, IDResult){
+    let item = this.mhps[i].rulebook.assetCatalog[itemKey];
     item.keywords = item.keywords || {};
     categories.forEach(category => {
       let keyarray = (IDResult[category.$.TARGETID]?.$.NAME || category.$.NAME)?.split(': ') || [];
@@ -374,24 +386,24 @@ export class AppComponent implements OnInit {
     return compStr.charAt(0).toUpperCase() + compStr.slice(1);
   }
 
-  orderManifest(manifest: Manifest) {
-    manifest.history.present = <ManifestHistoryItem>this.orderObject(manifest.history.present);
+  orderRulebookHistory(rulebookHistory: RulebookHistoryItem) {
+    rulebookHistory = <RulebookHistoryItem>this.orderObject(rulebookHistory);
     ['assetCatalog', 'assetTaxonomy'].forEach(type => {
-      manifest.history.present.manifest[type] = this.orderObject(manifest.history.present.manifest[type]);
-      Object.keys(manifest.history.present.manifest[type]).forEach(typeName => {
-        delete manifest.history.present.manifest[type][typeName].designation;
-        delete manifest.history.present.manifest[type][typeName]['displayName'];
-        manifest.history.present.manifest[type][typeName] = this.orderObject(manifest.history.present.manifest[type][typeName]);
+      rulebookHistory.rulebook[type] = this.orderObject(rulebookHistory.rulebook[type]);
+      Object.keys(rulebookHistory.rulebook[type]).forEach(typeName => {
+        delete rulebookHistory.rulebook[type][typeName].designation;
+        delete rulebookHistory.rulebook[type][typeName]['displayName'];
+        rulebookHistory.rulebook[type][typeName] = this.orderObject(rulebookHistory.rulebook[type][typeName]);
         ['aspects','assets','allowed','stats','rules'].forEach(propertyName => {
-          if (manifest.history.present.manifest[type][typeName][propertyName]) {
+          if (rulebookHistory.rulebook[type][typeName][propertyName]) {
             if(['stats','rules'].includes(propertyName)){
               let log = false;
-              manifest.history.present.manifest[type][typeName][propertyName] = this.orderObjectRecurse(manifest.history.present.manifest[type][typeName][propertyName],log);
+              rulebookHistory.rulebook[type][typeName][propertyName] = this.orderObjectRecurse(rulebookHistory.rulebook[type][typeName][propertyName],log);
             }else{
-              manifest.history.present.manifest[type][typeName][propertyName] = this.orderObject(manifest.history.present.manifest[type][typeName][propertyName]);
+              rulebookHistory.rulebook[type][typeName][propertyName] = this.orderObject(rulebookHistory.rulebook[type][typeName][propertyName]);
             }
           }
-          if (!Object.keys(manifest.history.present.manifest[type][typeName][propertyName] || {}).length) delete manifest.history.present.manifest[type][typeName][propertyName];
+          if (!Object.keys(rulebookHistory.rulebook[type][typeName][propertyName] || {}).length) delete rulebookHistory.rulebook[type][typeName][propertyName];
         });
       });
     });
@@ -417,16 +429,32 @@ export class AppComponent implements OnInit {
     return ordered
   }
 
-  exportCSVs(event: Event){
-    const classNames = Object.keys(this.manifest.history.present.manifest.assetTaxonomy);
+  exportAllCSVs(event: Event){
+    var zip = new JSZip();
+    let game = this.mhps[0].game;
+    this.mhps.forEach((mhp,i) => {
+      if(mhp){
+        let zipCat = this.exportCSVs(i,false);
+        zipCat.forEach((filename,zipfile) => {
+          console.log(filename,zipfile)
+          zip.folder(mhp.name).file(filename, zipfile.async('blob'));
+        });
+      }
+    });
+    zip.generateAsync({type:'blob'}).then(function(content) {
+      saveAs(content, game + '.zip');
+    });
+  }
+  exportCSVs(i,dl: boolean = true) {
+    const classNames = Object.keys(this.mhps[i].rulebook.assetTaxonomy);
     let csvStrings:{[className: string]: string} = {};
     classNames.forEach(className => {
-      let itemList = Object.entries(this.manifest.history.present.manifest.assetCatalog).filter(([itemKey,item]) => itemKey.split('§')[0] === className);
+      let itemList = Object.entries(this.mhps[i].rulebook.assetCatalog).filter(([itemKey,item]) => itemKey.split('§')[0] === className);
       const verboten = ['designation','classification','id','templateClass','rules','aspects','tracked','tally'];
       const kosher = ['stats','keywords','allowed','constraints','disallowed','assets','text','info'];
       let itemFields = [['designation']];
-      let classCompare = this.manifest.history.present.manifest.assetTaxonomy[className];
-      kosher.forEach((key,i) => {
+      let classCompare = this.mhps[i].rulebook.assetTaxonomy[className];
+      kosher.forEach(key => {
         switch (key) {
           case 'stats':
             let newStatList = {}
@@ -486,7 +514,7 @@ export class AppComponent implements OnInit {
         }
       });
       let csvString = itemFields.map(item => item.join('§')).join(',') + '\r\n';
-      itemList.forEach(([itemKey,item],i) => {
+      itemList.forEach(([itemKey,item],j) => {
         item['designation'] = itemKey.split('§')[1];
         let itemLine: string[] = [];
         itemFields.forEach(itemField => {
@@ -514,20 +542,25 @@ export class AppComponent implements OnInit {
           }else itemLine.push('');
         });
         csvString += itemLine.join(',');
-        csvString += (i + 1) < Object.keys(itemList).length ? '\r\n' : '';
+        csvString += (j + 1) < Object.keys(itemList).length ? '\r\n' : '';
       });
       csvStrings[className] = csvString;
     });
     let filename = '';
-    filename += (this.manifest.history.present.game + '_') || '';
-    filename += (this.manifest.history.present.name) || '';
+    filename += (this.mhps[i].game + '_') || '';
+    filename += (this.mhps[i].name) || '';
     var zip = new JSZip();
     Object.entries(csvStrings).forEach(([className,csvString]) => {
       zip.file(filename + '_' + className + '_assets.csv', csvString);
     });
-    zip.generateAsync({type:'blob'}).then(function(content) {
-      saveAs(content, filename + '.zip');
-    });
+    if(dl){
+      zip.generateAsync({type:'blob'}).then(function(content) {
+        saveAs(content, filename + '.zip');
+      });
+      return null;
+    }else{
+      return zip;
+    }
   }
   formatCSVEntry(value){
     let formattedValue = value;

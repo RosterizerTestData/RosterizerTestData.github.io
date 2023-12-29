@@ -719,7 +719,7 @@
         "id": {
           "$ref": "#/definitions/Breadcrumbs"
         },
-        "manifestSlug": {
+        "rulebookSlug": {
           "type": "string"
         },
         "noErrors": {

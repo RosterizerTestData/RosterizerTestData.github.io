@@ -17,7 +17,7 @@ export class Roster {
   public updated_at?: string;
   public deleted_at?: string;
   
-  public manifest: RosterManifest = new RosterManifest();
+  public rulebook: RosterRulebook = new RosterRulebook();
 
   public processed?: {
     registry?: Asset;
@@ -38,11 +38,11 @@ export class RosterHistoryItem {
   id: Breadcrumbs;
   updated_at: string;
   noErrors?: boolean = false;
-  manifestSlug?: string;
+  rulebookSlug?: string;
   roster: Asset = {item: 'Roster§Roster'};
 }
 
-export class RosterManifest {
+export class RosterRulebook {
   public hash?: string;
   public name?: string;
   public dependencies?: string;
